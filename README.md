@@ -27,4 +27,6 @@ The two utility scripts should be used in conjunction to create lists of devices
 ###### ship_config.py
   python3 ship_config.py {create (config name)|update (config name)|delete (config name)|list}
 
+#
+
 :D

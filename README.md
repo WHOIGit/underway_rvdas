@@ -7,11 +7,12 @@ This project is aimed to reduce the headache of configuring old underway data co
 
 1. underway_rvdas.py
   This is the main application, and is used to perform the actual data collection. This script reads the configuration information provided and listens for incoming data, forwarding it to the appropriate destination(s).
+  This script is still a WIP, it is not complete. It is partially functional, reading hardcoded configuration data from dslog.ini, but does not have the functionality to load a ship configuration yet.
 
-2. device_config.py
+3. device_config.py
   This is a utility script used to set up device configurations. When ran, this script modifies the conf/device.conf file and provides the ability to define, update, and remove sensors and other devices used for underway data collection in any research vessel.
 
-3. ship_conf.py
+4. ship_conf.py
    This is another utility script, used to set up configurations for ships. When ran, this script modifies the conf/ship.conf file, which maps specific devices to specific configurations used on different vessels, which can be loaded into the underway_rvdas.py script.
 
 The two utility scripts should be used in conjunction to create lists of devices that can be quickly swapped out between invocations of the main application. However, the configuration files may also be manually edited, although this is generally not recommended since the format is not checked and may cause fatal errors in the application if formatted improperly.

@@ -1,4 +1,4 @@
-# underway_rvdas
+# Underway RVDAS
 An implementation of OpenRVDAS to allow seamless configuration of devices for research vessels.
 
 ## Description

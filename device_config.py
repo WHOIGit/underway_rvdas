@@ -98,22 +98,15 @@ def update_device_conf(conf_name, device_conf, available_properties):
         if prop not in available_properties:
             print(f'    - property {prop} not found, try again')
             continue
-        # TODO: check if property exists
+        # Check if property needs to be replaced or updated, and add input to properties list
+        q = next((p for p in properties if p.startswith(prop)), None)
+        properies.append(i)
         # Property already exists, update value
-        i = 'Somevalue'
-        x = False
-        q = None
-        for p in properties:
-            if p.startswith(prop):
-                x = True
-                q = p
-        if x:
+        if q:
             properties.remove(q)
-            properties.append(i)
             print(f'    - changed property {prop} for {conf_name}')
         # Property does not exist, add to properties list
         else:
-            properties.append(i)
             print(f'    - added property {prop} to {conf_name}')
     # Add configuration to list
     for conf in device_conf:

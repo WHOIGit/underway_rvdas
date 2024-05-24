@@ -1,5 +1,6 @@
 import argparse
 import logging
+import pprint
 import sys
 import time
 
@@ -11,40 +12,72 @@ from logger.transforms.timestamp_transform import TimestampTransform
 from logger.writers.logfile_writer import LogfileWriter
 from logger.writers.text_file_writer import TextFileWriter
 
-class InputDevice:
-    def __init__(self):
-        self.properties = {}
-
-def parse_ini(self, filepath):
-    """Parse sensor collection and transmission data from an ini file.
-    filepath    The path of the file to parse from. This should be a
-                path to a file called dslog.ini.
+def parse_ships(filepath):
+    """Parse ship configuration data from a file.
+    filepath    The path of the file to parse from.
     """
-    inputs = []
-    current_input = None
-    with open(filepath, 'r') as file:
-        for line in file:
+    ship_conf = []
+    current_conf = None
+    with open(filepath, 'r') as ship_conf_file:
+        for line in ship_conf_file:
             line = line.strip()
-            # New input device definition
-            if line.startswith("[INPUT_"):
-                if current_input:
-                    inputs.append(current_input)
-                current_input = InputDevice()
-            # This block should not trigger, the data in the ini 
-            # config file is formatted incorrectly if it does
-            elif line.startswith("["):
-                current_input = None
-            # Attribute of current input device
-            elif current_input:
-                if '=' in line:
-                    attr = line.split("=")
-                    current_input.properties[attr[0]] = attr[1]
-    # Add the last input device to the list
-    if current_input:
-        inputs.append(current_input)
-    return inputs
+            # Ignore comments
+            if line.startswith('#'):
+                continue
+            # New ship conf
+            if line.startswith('['):
+                if current_conf:
+                    ship_conf.append(current_conf)
+                current_conf = {'ship': line[1:-1], 'devices': []}
+            # Store device as part of current conf if not blank
+            elif line != '':
+                current_conf['devices'].append(line)
+        # Store last entry
+        if (current_conf):
+            ship_conf.append(current_conf)
+    return ship_conf
 
-def generate_readers(self, input_devices):
+def parse_devices(filepath):
+    """Parse device configuration data from a file.
+    filepath    The path of the file to parse from.
+    """
+    device_conf = []
+    current_conf = None
+    with open(filepath, 'r') as device_conf_file:
+        for line in device_conf_file:
+            line = line.strip()
+            # Ignore comments
+            if line.startswith('#'):
+                continue
+            # New device conf
+            elif line.startswith('['):
+                if current_conf:
+                    device_conf.append(current_conf)
+                current_conf = {'device': line[1:-1], 'properties': []}
+            # Store device as part of current conf if not blank
+            elif line != '':
+                current_conf['properties'].append(line)
+        # Store last entry
+        if (current_conf):
+            device_conf.append(current_conf)
+    return device_conf
+
+def parse_config(ships, devices):
+    """Combines the parsed ship and device data into one object.
+    ships       A list of parsed ship configurations.
+    devices     A list of parsed device configurations.
+    """
+    input_devices = []
+    config_map = {prop['device']: prop for prop in devices}
+    for ship in ships:
+        ship_config = {'ship': ship['ship'], 'devices': []}
+        for device in ship['devices']:
+            if device in config_map:
+                ship_config['devices'].append(config_map[device])
+        input_devices.append(ship_config)
+    return input_devices
+
+def generate_readers(input_devices):
     """Generate UDPReader objects from parsed input device data.
     input_devices   A list of parsed input devices that include (at 
                     a minimum): the sensor name, IP address(es), 
@@ -60,7 +93,7 @@ def generate_readers(self, input_devices):
             readers.append(reader)
     return readers
 
-def generate_transforms(self, input_devices):
+def generate_transforms(input_devices):
     """Generate logging transforms from parsed input device data.
     input_devices   A list of parsed input devices that include (at 
                     a minimum): the sensor name, IP address(es), 
@@ -87,10 +120,10 @@ logging.getLogger().setLevel(LOG_LEVELS[1])
 # Command line input
 parser = argparse.ArgumentParser()
 parser.add_argument('--method', help='The method of data collection to run.', choices=['log', 'serial', 'udp', 'visual'], nargs='*', required=True)
-configuration = parser.add_mutually_exclusive_group(required=True)
-configuration.add_argument('--configFile', help='A configuration file that lists the device names, output hosts, and output ports to measure.')
-configuration.add_argument('--sensorData', help='A semicolon-delimited set of device mappings to measure. Format: "<device>:<port1>,<port2>,...;"')
-parser.add_argument('--interval', help='The amount of time (in seconds) between each data retrieval.', type=int)
+parser.add_argument('--shipConfig', help='A configuration file for ship configs.', required=True)
+parser.add_argument('--deviceConfig', help='A configuration file for device configs.', required=True)
+# configuration.add_argument('--sensorData', help='A semicolon-delimited set of device mappings to measure. Format: "<device>:<port1>,<port2>,...;"')
+# parser.add_argument('--interval', help='The amount of time (in seconds) between each data retrieval.', type=int)
 # subparsers = parser.add_subparsers(dest='subcommand')
 # log_parser = subparsers.add_parser('log')
 # serial_parser = subparsers.add_parser('serial')
@@ -100,21 +133,22 @@ parser.add_argument('--interval', help='The amount of time (in seconds) between 
 args = parser.parse_args()
 
 # Parse sensor information
-if args.configFile:
-    input_devices = parse_ini(args.configFile)
+ships = parse_ships(args.shipConfig)
+devices = parse_devices(args.deviceConfig)
+configuration = parse_config(ships, devices)
 # elif args.sensorData:
-#     input_devices = parse_devices(args.sensorData)
-else:
-    input_devices = []
-    logging.error('No input data is being consumed!')
+# #     input_devices = parse_devices(args.sensorData)
+# else:
+#     input_devices = []
+#     logging.error('No input data is being consumed!')
     
 # Device readers
-readers = generate_readers(input_devices)
+readers = generate_readers(configuration)
 
 # Data transforms
 transforms = []
-if input_devices:
-    transforms.append(generate_transforms(input_devices))
+if configuration:
+    transforms.append(generate_transforms(configuration))
 transforms.append(TimestampTransform())
 
 # Text/UDP/serial writers

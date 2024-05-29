@@ -47,7 +47,17 @@ The configuration file specified maps each log file to a specific port. In the c
 cd ~/WHOI/openrvdas/logger/utils && python3 simulate_data.py --config ~/WHOI/underway_rvdas/test_data/status_screen/sim_status_screen_data.yaml
 ```
 
-### 2. Run underway_data_monitor.py
+### 2. Start feeder scripts
+
+Run the feeder scripts which will update the database.
+
+These feeder scripts are subpar, and there is a mismatch between the data outputted by the sensors and the data written to DB by the feeder scripts. In the future, this program can be extended to either regenerate feeder scripts on invocation of the program, or consolidate feeder scripts into one absctracted feeder script that makes the feeder scripts for specific devices simpler, less repetitive, and more flexible with format of input data.
+
+```
+cd ~/WHOI/underway_rvdas/database/feeders && ./startup.sh
+```
+
+### 3. Run underway_data_monitor.py
 
 Next, run the main program which will listen for the data being transmitted, log it, and also output it as UDP data. This data is picked up by the python feeder scripts, which will write it to the database.
 
@@ -58,16 +68,6 @@ cd ~/WHOI/underway_rvdas
 python3 device_config.py list
 python3 ship_config.py list
 python3 underway_data_monitor.py --ship test
-```
-
-### 3. Start feeder scripts
-
-Run the feeder scripts which will update the database.
-
-These feeder scripts are subpar, and there is a mismatch between the data outputted by the sensors and the data written to DB by the feeder scripts. In the future, this program can be extended to either regenerate feeder scripts on invocation of the program, or consolidate feeder scripts into one absctracted feeder script that makes the feeder scripts for specific devices simpler, less repetitive, and more flexible with format of input data.
-
-```
-cd ~/WHOI/underway_rvdas/database/feeders && ./startup.sh
 ```
 
 ### 4. View live database updates

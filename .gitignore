@@ -1,6 +1,5 @@
 
-/output
-/test_data
+/output/*
 
 /__pycache__
 *.pyc

@@ -17,7 +17,7 @@ This project is aimed to reduce the headache of configuring old underway data co
 
 The two utility scripts should be used in conjunction to create lists of devices that can be quickly swapped out between invocations of the main application. However, the configuration files may also be manually edited, although this is generally not recommended since the format is not checked and may cause fatal errors in the application if formatted improperly.
 
-####More Info
+#### More Info
 
 First, ship_config.py and device_config.py are used to edit the ship/ship.conf and conf/device.conf files. These are configuration files that will replace dslog.ini. The configurations for devices list out device names and ports, although some more attributes potentially may need to be added later. The configurations for ships just have a list of device names that are used by that particular ship configuration. For example, a ship config "armstrong_gps" may list the GPS devices needed by Armstrong, "armstrong_research" may list out sensors used to measure temperature, density, etc, and "armstrong_main" may list out all instruments used by Armstrong for any purpose. The scripts do this via command line I/O.
 

@@ -13,6 +13,7 @@ from logger.transforms.prefix_transform import PrefixTransform
 from logger.transforms.timestamp_transform import TimestampTransform
 from logger.writers.logfile_writer import LogfileWriter
 from logger.writers.text_file_writer import TextFileWriter
+from logger.writers.udp_writer import UDPWriter
 
 ############################################################################
 def parse_ships(filepath):
@@ -83,23 +84,18 @@ def parse_config(ships, devices):
     return input_devices
 
 ############################################################################
-def setup_listener(device, port, input_type, output_type):
-    print(f'setting up listener for {device} on {port} ({input_type})')
+def setup_listener(device, in_port, input_type, out_destination, out_port):
     if input_type == 'serial':
-        reader = SerialReader(port=port)
+        reader = SerialReader(port=in_port)
     elif input_type == 'udp':
-        reader = UDPReader(port=port)
+        reader = UDPReader(port=in_port)
     readers = [reader]
     transforms = [PrefixTransform(prefix=device), TimestampTransform()]
     writers = []
-    if 'log' in output_type:
-        writers.append(LogfileWriter(filebase=f'output/{device}.log'))
-    # if 'serial' in output_type:
-    #     writers.append(SerialWriter(...))
-    # if 'udp' in output_type:
-    #     writers.append(UDPWriter(...))
+    writers.append(LogfileWriter(filebase=f'output/{device}.log'))
+    writers.append(UDPWriter(destination="128.128.214.243", port=int(out_port)))
+    print(f'Writing {device} UDP data to {out_destination}:{out_port}')
     listener = Listener(readers=readers, transforms=transforms, writers=writers)
-    print(f'Running listener for {device} on {port}')
     listener.run()
 
 ############################################################################
@@ -112,33 +108,39 @@ logging.getLogger().setLevel(LOG_LEVELS[1])
 
 # Ship config argument
 parser = argparse.ArgumentParser()
-parser.add_argument('--method', help='The method of data collection to run.', choices=['log', 'serial', 'udp'], nargs='*', required=True)
-# TODO: add conditional argument for serial port and udp port if those methods are specified
-parser.add_argument('--shipConfig', help='Path to the device config file', required=True)
-parser.add_argument('--deviceConfig', help='Path to the ship config file', required=True)
+parser.add_argument('--shipConfigsFile', help='Path to the device configurations file')
+parser.add_argument('--deviceConfigsFile', help='Path to the ship configurations file')
 parser.add_argument('--ship', help='Ship config to run', required=True)
-parser.add_argument('--interval', help='The amount of time (in seconds) between each data retrieval.', type=int)
+# TODO: implement interval
+# parser.add_argument('--interval', help='The amount of time (in seconds) between each data retrieval.', type=int)
 args = parser.parse_args()
 
 # Parse configuration files
-ships = parse_ships(args.shipConfig)
-devices = parse_devices(args.deviceConfig)
-config = parse_config(ships,devices)
+shipConfigsFile = 'conf/ship.conf' if not args.shipConfigsFile else args.shipConfigsFile
+ships = parse_ships(shipConfigsFile)
+# Check for invalid ship 
+if not any(config['ship'].lower() == args.ship.lower() for config in ships):
+    print(f'Ship configuration {args.ship} not found.')
+    sys.exit()
+deviceConfigsFile = 'conf/device.conf' if not args.deviceConfigsFile else args.deviceConfigsFile
+devices = parse_devices(deviceConfigsFile)
+config = parse_config(ships, devices)
 
 # Set up readers, writers, and transforms for each device
-threads = [
-    threading.Thread(
-        target=setup_listener,
-        args=(
-            device_conf['device'],
-            next((prop.split('=')[1] for prop in device_conf['properties'] if prop.startswith('port=')), None),
-            next((prop.split('=')[1] for prop in device_conf['properties'] if prop.startswith('data_type=')), None),
-            args.method
-        )
-    )
-    for conf in config
-    for device_conf in conf['devices']
-]
+threads = []
+for conf in config:
+    if conf['ship'] == args.ship:
+        for device in conf['devices']:
+            device_name = device['device']
+            properties = device['properties']
+            in_port = next(prop.split("=")[1] for prop in properties if prop.startswith('in_port='))
+            data_type = next(prop.split("=")[1] for prop in properties if prop.startswith('data_type='))
+            udp_destination = next(prop.split("=")[1] for prop in properties if prop.startswith('udp_destination='))
+            udp_port = next(prop.split("=")[1] for prop in properties if prop.startswith('udp_port='))
+            threads.append(threading.Thread(
+                target=setup_listener,
+                args=(device_name, in_port, data_type, udp_destination, udp_port)
+            ))
 [thread.start() for thread in threads]
 [thread.join() for thread in threads]
 

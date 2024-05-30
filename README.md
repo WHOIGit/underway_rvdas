@@ -8,10 +8,10 @@ This project is aimed to reduce the headache of configuring old underway data co
 1. underway_data_monitor.py
   This is the main application, and is used to perform the actual data collection. This script reads the configuration information provided and listens for incoming data, forwarding it to the appropriate destination(s). The feeder scripts need to be invoked separately, they are not part of this program. That feature could be added in the future if desired. This script is still a WIP, it is not complete. 
 
-3. device_config.py
+2. device_config.py
   This is a utility script used to set up device configurations. When ran, this script modifies the conf/device.conf file and provides the ability to define, update, and remove sensors and other devices used for underway data collection in any research vessel.
 
-4. ship_conf.py
+3. ship_conf.py
    This is another utility script, used to set up configurations for ships. When ran, this script modifies the conf/ship.conf file, which maps specific devices to specific configurations used on different vessels, which can be loaded into the underway_rvdas.py script.
 
 The two utility scripts should be used in conjunction to create lists of devices that can be quickly swapped out between invocations of the main application. However, the configuration files may also be manually edited, although this is generally not recommended since the format is not checked and an improper format in either of the files may cause runtime errors or logic errors in the application.
@@ -64,10 +64,9 @@ Next, run the main program which will listen for the data being transmitted, log
 The program takes a ship argument, which is the name of a ship configuration. These ship configurations are created and edited by the scripts ```ship_config.py``` and ```device.config.py```. Each ship configuration is a list of defined devices with specified input and output information necessary for updating the database. The concept of ship configurations is primarily to reduce time spent manually editing configuration files, and allowing for the user to quickly swap between two sets of devices between two invocations of the program.
 
 ```
-cd ~/WHOI/underway_rvdas
-python3 device_config.py list
-python3 ship_config.py list
-python3 underway_data_monitor.py --ship test
+cd ~/WHOI/underway_rvdas && python3 device_config.py list
+cd ~/WHOI/underway_rvdas && python3 ship_config.py list
+cd ~/WHOI/underway_rvdas && python3 underway_data_monitor.py --ship test
 ```
 
 ### 4. View live database updates

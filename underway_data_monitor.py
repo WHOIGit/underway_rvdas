@@ -87,6 +87,13 @@ def parse_config(ships, devices):
 
 ############################################################################
 def setup_listener(device, in_port, input_type, out_destination, out_port):
+    """Sets up the readers, transforms, and writers for a device
+    device              The name of the device to listen to
+    in_port             The port for the incoming data
+    input_type          The type of incoming data (serial, udp)
+    out_destination     The IP of the server writing to DB
+    out_port            The port to write the outgoing data to
+    """
     # Read serial or UDP data
     readers = []
     if input_type == 'serial':

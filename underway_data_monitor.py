@@ -16,24 +16,6 @@ from logger.writers.text_file_writer import TextFileWriter
 from logger.writers.udp_writer import UDPWriter
 
 ############################################################################
-def setup_logging(log_level):
-    LOGGING_FORMAT = '%(asctime)-15s %(message)s'
-    logging.basicConfig(format=LOGGING_FORMAT)
-    LOG_LEVELS = {0: logging.WARNING, 1: logging.INFO, 2: logging.DEBUG}
-    logging.getLogger().setLevel(LOG_LEVELS[log_level])
-
-############################################################################
-def setup_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--shipConfigsFile', help='Path to the device configurations file')
-    parser.add_argument('--deviceConfigsFile', help='Path to the ship configurations file')
-    parser.add_argument('--ship', help='Ship config to run', required=True)
-    # TODO: implement interval?
-    # parser.add_argument('--interval', help='The amount of time (in seconds) between each data retrieval.', type=int)
-    return parser.parse_args()
-
-
-############################################################################
 def parse_ships(filepath):
     """Parse ship configuration data from a file.
     filepath    The path of the file to parse from.
@@ -125,9 +107,20 @@ def setup_listener(device, in_port, input_type, out_destination, out_port):
 
 ############################################################################
 
-# First, set up logging and handle command line arguments
-setup_logging(1)
-args = parse_args()
+# First, set up logging 
+LOGGING_FORMAT = '%(asctime)-15s %(message)s'
+logging.basicConfig(format=LOGGING_FORMAT)
+LOG_LEVELS = {0: logging.WARNING, 1: logging.INFO, 2: logging.DEBUG}
+logging.getLogger().setLevel(LOG_LEVELS[log_level])
+
+# Handle command line arguments
+parser = argparse.ArgumentParser()
+parser.add_argument('--shipConfigsFile', help='Path to the device configurations file')
+parser.add_argument('--deviceConfigsFile', help='Path to the ship configurations file')
+parser.add_argument('--ship', help='Ship config to run', required=True)
+# TODO: implement interval?
+# parser.add_argument('--interval', help='The amount of time (in seconds) between each data retrieval.', type=int)
+args = parser.parse_args()
 
 # Parse configuration files
 shipConfigsFile = 'conf/ship.conf' if not args.shipConfigsFile else args.shipConfigsFile

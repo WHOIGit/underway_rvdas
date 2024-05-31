@@ -65,7 +65,11 @@ The program takes a ship argument, which is the name of a ship configuration. Th
 
 ```
 cd ~/WHOI/underway_rvdas && python3 device_config.py list
+```
+```
 cd ~/WHOI/underway_rvdas && python3 ship_config.py list
+```
+```
 cd ~/WHOI/underway_rvdas && python3 underway_data_monitor.py --ship test
 ```
 

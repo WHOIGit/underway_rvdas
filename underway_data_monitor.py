@@ -86,9 +86,10 @@ def parse_config(ships, devices):
     return input_devices
 
 ############################################################################
-def setup_listener(device, in_port, input_type, out_destination, out_port):
+def setup_listener(device, data_type, in_port, input_type, out_destination, out_port):
     """Sets up the readers, transforms, and writers for a device
     device              The name of the device to listen to
+    data_type           The 'type' of incoming data, e.g. SSW, NAV, etc
     in_port             The port for the incoming data
     input_type          The type of incoming data (serial, udp)
     out_destination     The IP of the server writing to DB
@@ -103,11 +104,14 @@ def setup_listener(device, in_port, input_type, out_destination, out_port):
     # Add timestamp and device name to each record
     transforms = []
     transforms.append(PrefixTransform(prefix=device))
-    transforms.append(TimestampTransform())
+    TIMESTAMP_FORMAT = "%Y/%m/%d %H:%M:%S.%f"
+    transforms.append(TimestampTransform(time_format=TIMESTAMP_FORMAT))
+    # Add data type to each record if exists
+    data_type and transforms.append(PrefixTransform(prefix=data_type))
     # Write text to log file and UDP to appropriate destination
     writers = []
-    writers.append(LogfileWriter(filebase=f'output/{device}.log'))
-    writers.append(UDPWriter(destination="128.128.214.243", port=int(out_port)))
+    writers.append(TextFileWriter(filename=f'output/{device}.log'))
+    writers.append(UDPWriter(destination=out_destination, port=int(out_port)))
     # Start listener pipeline
     listener = Listener(readers=readers, transforms=transforms, writers=writers)
     listener.run()
@@ -118,7 +122,7 @@ def setup_listener(device, in_port, input_type, out_destination, out_port):
 LOGGING_FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(format=LOGGING_FORMAT)
 LOG_LEVELS = {0: logging.WARNING, 1: logging.INFO, 2: logging.DEBUG}
-logging.getLogger().setLevel(LOG_LEVELS[log_level])
+logging.getLogger().setLevel(LOG_LEVELS[1])
 
 # Handle command line arguments
 parser = argparse.ArgumentParser()
@@ -140,19 +144,24 @@ deviceConfigsFile = 'conf/device.conf' if not args.deviceConfigsFile else args.d
 devices = parse_devices(deviceConfigsFile)
 config = parse_config(ships, devices)
 
+# Utility function to read properties
+def _read_property(property):
+    return next((prop.split("=")[1] for prop in properties if prop.startswith(property)), None)
+
 # Set up readers, writers, and transforms for each device
 threads = []
 conf = next((conf for conf in config if conf['ship'] == args.ship), None)
 for device in conf['devices']:
     device_name = device['device']
     properties = device['properties']
-    in_port = next(prop.split("=")[1] for prop in properties if prop.startswith('in_port='))
-    data_type = next(prop.split("=")[1] for prop in properties if prop.startswith('data_type='))
-    udp_destination = next(prop.split("=")[1] for prop in properties if prop.startswith('udp_destination='))
-    udp_port = next(prop.split("=")[1] for prop in properties if prop.startswith('udp_port='))
+    data_type = _read_property('data_type')
+    in_port = _read_property('in_port=')
+    input_type = _read_property('input_type=')
+    udp_destination = _read_property('udp_destination=')
+    udp_port = _read_property('udp_port=')
     threads.append(threading.Thread(
         target=setup_listener,
-        args=(device_name, in_port, data_type, udp_destination, udp_port)
+        args=(device_name, data_type, in_port, input_type, udp_destination, udp_port)
     ))
 [thread.start() for thread in threads]
 [thread.join() for thread in threads]

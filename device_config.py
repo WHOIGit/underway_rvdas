@@ -39,34 +39,23 @@ def create_device_conf(conf_name, device_conf, available_properties):
     if next((conf for conf in device_conf if conf['device'] == conf_name), None) is not None:
         print(f'Existing configuration for \'{conf_name}\' found. Use \'python3 {os.path.basename(__file__)} edit {conf_name}\' to modify an existing entry.')
         sys.exit()
-    properties = []
-    print(f'Available properties:\n{available_properties}\n')
-    print(f'Enter \'save\' to save configuration. Enter device name to add to \'{conf_name}\':')
-    # Convert all items in available_properties to lowercase for string matching
-    available_properties = [i.lower() for i in available_properties]
-    # Prompt to continually enter properties until 'save' is inputted
-    i = input('  -> ').strip().lower()
-    while (i not in ['save', 'done', 'exit', 'quit']):
-        z = i.find('=')
-        if z == -1:
-            print(f'    - property must be in the format: property=value')
-        else:
-            prop = i[:z]
-            # TODO: ensure valid value for each property
-            value = i[z + 1:]
-            if any(prop in p for p in properties):
-                print(f'    - property {prop} already in {conf_name} configuration')
-            elif prop in available_properties:
-                properties.append(i)
-                print(f'    - added {i} to {conf_name}')
-            else:
-                print(f'    - property {prop} not found, try again')
-        i = input('  -> ').lower()
+
+    properties = {}
+    print(f'Creating new configuration for \'{conf_name}\'.\n')
+
+    for prop in available_properties:
+        value = input(f'Enter value for {prop}: ').strip()
+        while not value:
+            print(f'{prop} is required. Please enter a value.')
+            value = input(f'Enter value for {prop}: ').strip()
+        properties[prop] = value
+
     # Add configuration to list
-    device_conf.append({'device': conf_name, 'properties': properties})
+    device_conf.append({'device': conf_name, 'properties': [f"{k}={v}" for k, v in properties.items()]})
+    print(f'Configuration for \'{conf_name}\' created successfully.')
 
 def update_device_conf(conf_name, device_conf, available_properties):
-    """Create a new device configuration.  
+    """Update an existing device configuration.  
     conf_name               The name of the device configuration to update.
     device_conf             The current device configuration data to be modified.
     available_properties    The list of available properties to modify the 
@@ -77,42 +66,20 @@ def update_device_conf(conf_name, device_conf, available_properties):
     if current_conf is None:
         print(f'No configuration for \'{conf_name}\' found. Use \'python3 {os.path.basename(__file__)} create {conf_name}\' to create a new entry.')
         sys.exit()
-    properties = current_conf['properties']
-    print(f'Available properties:\n{available_properties}\n')
-    print(f'Current properties in {conf_name} configuration:\n{current_conf['properties']}\n')
-    print(f'Enter \'save\' to save configuration. Enter property name to add to \'{conf_name}\':')
-    # Convert all items in available_properties and device_list to lowercase for string matching
-    available_properties = [i.lower() for i in available_properties]
-    properties = [i.lower() for i in properties]
-    # Prompt to continually enter properties until 'save' is inputted
-    i = None
-    while (i not in ['save', 'done', 'exit', 'quit']):
-        i = input('  -> ').lower()
-        z = i.find('=')
-        if z == -1:
-            print(f'    - property must be in the format: property=value')
-            continue
-        # Property is in valid format, parse it
-        prop, value = i[:z], i[z:]
-        # Invalid property
-        if prop not in available_properties:
-            print(f'    - property {prop} not found, try again')
-            continue
-        # Check if property needs to be replaced or updated, and add input to properties list
-        q = next((p for p in properties if p.startswith(prop)), None)
-        properies.append(i)
-        # Property already exists, update value
-        if q:
-            properties.remove(q)
-            print(f'    - changed property {prop} for {conf_name}')
-        # Property does not exist, add to properties list
-        else:
-            print(f'    - added property {prop} to {conf_name}')
-    # Add configuration to list
-    for conf in device_conf:
-        if conf['device'] == conf_name:
-            conf['properties'] = properties
-    print(f'Configuration editing complete: {device_conf}')
+
+    properties = {prop.split('=')[0]: prop.split('=')[1] for prop in current_conf['properties']}
+    print(f'Updating configuration for \'{conf_name}\'.\n')
+
+    for prop in available_properties:
+        current_value = properties.get(prop, '')
+        value = input(f'Enter value for {prop} [{current_value}]: ').strip()
+        if value:
+            properties[prop] = value
+
+    # Update configuration in the list
+    current_conf['properties'] = [f"{k}={v}" for k, v in properties.items()]
+    print(f'Configuration for \'{conf_name}\' updated successfully.')
+
 
 def rewrite_conf_file(filepath, device_conf):
     """Confirm intent to save changes and write to file.
@@ -155,7 +122,7 @@ if len(sys.argv) < 2:
 
 # Retrieve all necessary data for action
 method = args.method
-conf_file = 'conf/device.conf'
+conf_file = 'conf/2device.conf'
 device_conf = parse_conf_file(conf_file)
 
 # Check for list method first
@@ -170,11 +137,11 @@ if method == 'delete':
     # Remove element with conf['device'] == conf_name
     device_conf = [conf for conf in device_conf if conf['device'] != conf_name]
 # Load list of devices from device conf
-available_devices = ['type', 'port', 'format'] #device_conf.get_all()
+available_properties = ['data_type', 'in_port', 'input_type', 'udp_destination', 'udp_port'] #device_conf.get_all()
 if method == 'create':
-    create_device_conf(conf_name, device_conf, available_devices)
+    create_device_conf(conf_name, device_conf, available_properties)
 if method == 'update':
-    update_device_conf(conf_name, device_conf, available_devices)
+    update_device_conf(conf_name, device_conf, available_properties)
 
 # Rewrite file to match new configuration
 rewrite_conf_file(conf_file, device_conf)

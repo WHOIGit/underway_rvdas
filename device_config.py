@@ -45,9 +45,6 @@ def create_device_conf(conf_name, device_conf, available_properties):
 
     for prop in available_properties:
         value = input(f'Enter value for {prop}: ').strip()
-        while not value:
-            print(f'{prop} is required. Please enter a value.')
-            value = input(f'Enter value for {prop}: ').strip()
         properties[prop] = value
 
     # Add configuration to list
@@ -122,7 +119,7 @@ if len(sys.argv) < 2:
 
 # Retrieve all necessary data for action
 method = args.method
-conf_file = 'conf/2device.conf'
+conf_file = 'conf/device.conf'
 device_conf = parse_conf_file(conf_file)
 
 # Check for list method first
@@ -137,7 +134,7 @@ if method == 'delete':
     # Remove element with conf['device'] == conf_name
     device_conf = [conf for conf in device_conf if conf['device'] != conf_name]
 # Load list of devices from device conf
-available_properties = ['data_type', 'in_port', 'input_type', 'udp_destination', 'udp_port'] #device_conf.get_all()
+available_properties = ['data_type', 'in_port', 'input_type', 'baud_rate', 'udp_destination', 'udp_port']
 if method == 'create':
     create_device_conf(conf_name, device_conf, available_properties)
 if method == 'update':

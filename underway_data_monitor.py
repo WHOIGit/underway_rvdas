@@ -86,19 +86,23 @@ def parse_config(ships, devices):
     return input_devices
 
 ############################################################################
-def setup_listener(device, data_type, in_port, input_type, out_destination, out_port):
+def setup_listener(device, data_type, in_port, input_type, baud_rate, out_destination, out_port):
     """Sets up the readers, transforms, and writers for a device
     device              The name of the device to listen to
     data_type           The 'type' of incoming data, e.g. SSW, NAV, etc
     in_port             The port for the incoming data
     input_type          The type of incoming data (serial, udp)
+    baud_rate           The baud rate of incoming serial data
     out_destination     The IP of the server writing to DB
     out_port            The port to write the outgoing data to
     """
     # Read serial or UDP data
     readers = []
     if input_type == 'serial':
-        readers.append(SerialReader(port=in_port))
+        kwargs = {'port': in_port}
+        if baud_rate is not None:
+            kwargs['baud_rate'] = baud_rate
+        readers.append(SerialReader(**kwargs))
     elif input_type == 'udp':
         readers.append(UDPReader(port=in_port))
     # Add timestamp and device name to each record
@@ -111,7 +115,7 @@ def setup_listener(device, data_type, in_port, input_type, out_destination, out_
     # Write text to log file and UDP to appropriate destination
     writers = []
     writers.append(TextFileWriter(filename=f'output/{device}.log'))
-    writers.append(UDPWriter(destination=out_destination, port=int(out_port)))
+    out_destination and out_port and writers.append(UDPWriter(destination=out_destination, port=int(out_port)))
     # Start listener pipeline
     listener = Listener(readers=readers, transforms=transforms, writers=writers)
     listener.run()
@@ -155,13 +159,14 @@ for device in conf['devices']:
     device_name = device['device']
     properties = device['properties']
     data_type = _read_property('data_type')
-    in_port = _read_property('in_port=')
-    input_type = _read_property('input_type=')
-    udp_destination = _read_property('udp_destination=')
-    udp_port = _read_property('udp_port=')
+    in_port = _read_property('in_port')
+    input_type = _read_property('input_type')
+    baud_rate = _read_property('baud_rate')
+    udp_destination = _read_property('udp_destination')
+    udp_port = _read_property('udp_port')
     threads.append(threading.Thread(
         target=setup_listener,
-        args=(device_name, data_type, in_port, input_type, udp_destination, udp_port)
+        args=(device_name, data_type, in_port, input_type, baud_rate, udp_destination, udp_port)
     ))
 [thread.start() for thread in threads]
 [thread.join() for thread in threads]

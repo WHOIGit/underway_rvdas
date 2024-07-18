@@ -1,28 +1,7 @@
 # Underway RVDAS
-An implementation of OpenRVDAS to allow seamless configuration of devices for research vessels.
+An implementation of OpenRVDAS for WHOI's research vessels.
 
-## Description
-
-This project is aimed to reduce the headache of configuring old underway data collection systems, such as dsLog. It is designed for simplicity and ease of use, with the goal of reducing as much manual editing of configuration files as possible. Three main features are available:
-
-1. underway_data_monitor.py
-  This is the main application, and is used to perform the actual data collection. This script reads the configuration information provided and listens for incoming data, forwarding it to the appropriate destination(s). The feeder scripts need to be invoked separately, they are not part of this program. That feature could be added in the future if desired. This script is still a WIP, it is not complete. 
-
-2. device_config.py
-  This is a utility script used to set up device configurations. When ran, this script modifies the conf/device.conf file and provides the ability to define, update, and remove sensors and other devices used for underway data collection in any research vessel.
-
-3. ship_conf.py
-   This is another utility script, used to set up configurations for ships. When ran, this script modifies the conf/ship.conf file, which maps specific devices to specific configurations used on different vessels, which can be loaded into the underway_rvdas.py script.
-
-The two utility scripts should be used in conjunction to create lists of devices that can be quickly swapped out between invocations of the main application. However, the configuration files may also be manually edited, although this is generally not recommended since the format is not checked and an improper format in either of the files may cause runtime errors or logic errors in the application.
-
-#### More Info
-
-First, ship_config.py and device_config.py are used to edit the ship/ship.conf and conf/device.conf files. These are configuration files that will replace dslog.ini. The configurations for devices list out device names and ports, although some more attributes potentially may need to be added later. The configurations for ships just have a list of device names that are used by that particular ship configuration. For example, a ship config "armstrong_gps" may list the GPS devices needed by Armstrong, "armstrong_research" may list out sensors used to measure temperature, density, etc, and "armstrong_main" may list out all instruments used by Armstrong for any purpose. The scripts do this via command line I/O.
-
-Next, the configurations provided are then parsed, and for each device specified in the active configuration, a "Listener" is set up. This Listener contains several subcomponents. It has either a SerialReader or a UDPReader. The SerialReader listens for serial data. The UDPReader does the same, except with UDP data. A good test of this functionality is by using data outputted by the simulate_data script, which is provided by OpenRVDAS, or by using data transmitted by the Barryserial sensor in the Smith laboratory. The Listener has a PrefixTransform, which appends the device name to the data being streamed, and also has a TimestampTransform, which like the name suggests, appends a timestamp. The Listener contains a LogfileWriter, which logs the transformed incoming data to a log file. Logs are configured to send to a separate file for each instrument, but this can be changed to send several sensors to a single log file, or to send all sensors to a single log file, depending on how the data will be consumed. Finally, the Listener has a UDPWriter, which outputs the data to a specified port. This should line up with the ports listed in the feeder scripts, so that the incoming data is written to the database.
-
-Finally, all Listeners are invoked with the run() method. Each Listener waits for incoming information, and pushes it down the pipeline when data is transmitted: data --> SerialReader --> PrefixTransform --> TimestampTransform --> LogfileWriter
+[Full documentation](https://whoi-it.atlassian.net/wiki/spaces/ShipOps/pages/867205128/Underway+Data+Collection+with+OpenRVDAS)
 
 ## Usage
 

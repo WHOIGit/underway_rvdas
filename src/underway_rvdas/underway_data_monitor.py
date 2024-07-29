@@ -16,6 +16,11 @@ from logger.writers.text_file_writer import TextFileWriter
 from logger.writers.udp_writer import UDPWriter
 
 ############################################################################
+def _read_property(property):
+    # Utility function to read properties
+    return next((prop.split("=")[1] for prop in properties if prop.startswith(property)), None)
+
+############################################################################
 def parse_ships(filepath):
     """Parse ship configuration data from a file.
     filepath    The path of the file to parse from.
@@ -122,51 +127,48 @@ def setup_listener(device, data_type, in_port, input_type, baud_rate, out_destin
 
 ############################################################################
 
-# First, set up logging 
-LOGGING_FORMAT = '%(asctime)-15s %(message)s'
-logging.basicConfig(format=LOGGING_FORMAT)
-LOG_LEVELS = {0: logging.WARNING, 1: logging.INFO, 2: logging.DEBUG}
-logging.getLogger().setLevel(LOG_LEVELS[1])
+if __name__ == '__main__':
+    # First, set up logging 
+    LOGGING_FORMAT = '%(asctime)-15s %(message)s'
+    logging.basicConfig(format=LOGGING_FORMAT)
+    LOG_LEVELS = {0: logging.WARNING, 1: logging.INFO, 2: logging.DEBUG}
+    logging.getLogger().setLevel(LOG_LEVELS[1])
 
-# Handle command line arguments
-parser = argparse.ArgumentParser()
-parser.add_argument('--shipConfigsFile', help='Path to the device configurations file')
-parser.add_argument('--deviceConfigsFile', help='Path to the ship configurations file')
-parser.add_argument('--ship', help='Ship config to run', required=True)
-# TODO: implement interval?
-# parser.add_argument('--interval', help='The amount of time (in seconds) between each data retrieval.', type=int)
-args = parser.parse_args()
+    # Handle command line arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--shipConfigsFile', help='Path to the device configurations file')
+    parser.add_argument('--deviceConfigsFile', help='Path to the ship configurations file')
+    parser.add_argument('--ship', help='Ship config to run', required=True)
+    # TODO: implement interval?
+    # parser.add_argument('--interval', help='The amount of time (in seconds) between each data retrieval.', type=int)
+    args = parser.parse_args()
 
-# Parse configuration files
-shipConfigsFile = 'conf/ship.conf' if not args.shipConfigsFile else args.shipConfigsFile
-ships = parse_ships(shipConfigsFile)
-if not any(config['ship'].lower() == args.ship.lower() for config in ships):
-    # Invalid ship configuration
-    print(f'Ship configuration {args.ship} not found.')
-    sys.exit()
-deviceConfigsFile = 'conf/device.conf' if not args.deviceConfigsFile else args.deviceConfigsFile
-devices = parse_devices(deviceConfigsFile)
-config = parse_config(ships, devices)
+    # Parse configuration files
+    shipConfigsFile = 'conf/ship.conf' if not args.shipConfigsFile else args.shipConfigsFile
+    ships = parse_ships(shipConfigsFile)
+    if not any(config['ship'].lower() == args.ship.lower() for config in ships):
+        # Invalid ship configuration
+        print(f'Ship configuration {args.ship} not found.')
+        sys.exit()
+    deviceConfigsFile = 'conf/device.conf' if not args.deviceConfigsFile else args.deviceConfigsFile
+    devices = parse_devices(deviceConfigsFile)
+    config = parse_config(ships, devices)
 
-# Utility function to read properties
-def _read_property(property):
-    return next((prop.split("=")[1] for prop in properties if prop.startswith(property)), None)
-
-# Set up readers, writers, and transforms for each device
-threads = []
-conf = next((conf for conf in config if conf['ship'] == args.ship), None)
-for device in conf['devices']:
-    device_name = device['device']
-    properties = device['properties']
-    data_type = _read_property('data_type')
-    in_port = _read_property('in_port')
-    input_type = _read_property('input_type')
-    baud_rate = _read_property('baud_rate')
-    udp_destination = _read_property('udp_destination')
-    udp_port = _read_property('udp_port')
-    threads.append(threading.Thread(
-        target=setup_listener,
-        args=(device_name, data_type, in_port, input_type, baud_rate, udp_destination, udp_port)
-    ))
-[thread.start() for thread in threads]
-[thread.join() for thread in threads]
+    # Set up readers, writers, and transforms for each device
+    threads = []
+    conf = next((conf for conf in config if conf['ship'] == args.ship), None)
+    for device in conf['devices']:
+        device_name = device['device']
+        properties = device['properties']
+        data_type = _read_property('data_type')
+        in_port = _read_property('in_port')
+        input_type = _read_property('input_type')
+        baud_rate = _read_property('baud_rate')
+        udp_destination = _read_property('udp_destination')
+        udp_port = _read_property('udp_port')
+        threads.append(threading.Thread(
+            target=setup_listener,
+            args=(device_name, data_type, in_port, input_type, baud_rate, udp_destination, udp_port)
+        ))
+    [thread.start() for thread in threads]
+    [thread.join() for thread in threads]

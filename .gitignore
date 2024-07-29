@@ -1,6 +1,5 @@
 
 /output/*
-/utils/*
 /test_data/*
 
 /__pycache__

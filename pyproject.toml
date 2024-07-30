@@ -16,6 +16,9 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+dependencies = [
+    openrvdas
+]
 
 [project.scripts]
 underway_rvdas = "underway_rvdas.underway_data_monitor:main"

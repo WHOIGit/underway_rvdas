@@ -1,17 +1,13 @@
 import argparse
 import logging
-import pprint
 import sys
 import threading
-import time
 
-sys.path.append('/home/atlas/WHOI/openrvdas')
 from logger.listener.listener import Listener
 from logger.readers.serial_reader import SerialReader
 from logger.readers.udp_reader import UDPReader
 from logger.transforms.prefix_transform import PrefixTransform
 from logger.transforms.timestamp_transform import TimestampTransform
-from logger.writers.logfile_writer import LogfileWriter
 from logger.writers.text_file_writer import TextFileWriter
 from logger.writers.udp_writer import UDPWriter
 
@@ -110,17 +106,21 @@ def setup_listener(device, data_type, in_port, input_type, baud_rate, out_destin
         readers.append(SerialReader(**kwargs))
     elif input_type == 'udp':
         readers.append(UDPReader(port=in_port))
+
     # Add timestamp and device name to each record
     transforms = []
     transforms.append(PrefixTransform(prefix=device))
     TIMESTAMP_FORMAT = "%Y/%m/%d %H:%M:%S.%f"
     transforms.append(TimestampTransform(time_format=TIMESTAMP_FORMAT))
+
     # Add data type to each record if exists
     data_type and transforms.append(PrefixTransform(prefix=data_type))
+
     # Write text to log file and UDP to appropriate destination
     writers = []
     writers.append(TextFileWriter(filename=f'output/{device}.log'))
     out_destination and out_port and writers.append(UDPWriter(destination=out_destination, port=int(out_port)))
+    
     # Start listener pipeline
     listener = Listener(readers=readers, transforms=transforms, writers=writers)
     listener.run()

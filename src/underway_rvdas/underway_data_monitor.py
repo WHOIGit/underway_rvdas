@@ -3,13 +3,13 @@ import logging
 import sys
 import threading
 
-from logger.listener.listener import Listener
-from logger.readers.serial_reader import SerialReader
-from logger.readers.udp_reader import UDPReader
-from logger.transforms.prefix_transform import PrefixTransform
-from logger.transforms.timestamp_transform import TimestampTransform
-from logger.writers.text_file_writer import TextFileWriter
-from logger.writers.udp_writer import UDPWriter
+from openrvdas.logger.listener.listener import Listener
+from openrvdas.logger.readers.serial_reader import SerialReader
+from openrvdas.logger.readers.udp_reader import UDPReader
+from openrvdas.logger.transforms.prefix_transform import PrefixTransform
+from openrvdas.logger.transforms.timestamp_transform import TimestampTransform
+from openrvdas.logger.writers.text_file_writer import TextFileWriter
+from openrvdas.logger.writers.udp_writer import UDPWriter
 
 ############################################################################
 def _read_property(property):
@@ -120,7 +120,7 @@ def setup_listener(device, data_type, in_port, input_type, baud_rate, out_destin
     writers = []
     writers.append(TextFileWriter(filename=f'output/{device}.log'))
     out_destination and out_port and writers.append(UDPWriter(destination=out_destination, port=int(out_port)))
-    
+
     # Start listener pipeline
     listener = Listener(readers=readers, transforms=transforms, writers=writers)
     listener.run()

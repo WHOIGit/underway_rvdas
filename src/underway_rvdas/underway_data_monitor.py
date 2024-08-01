@@ -1,5 +1,6 @@
 import argparse
 import logging
+import os
 import sys
 import threading
 
@@ -10,6 +11,8 @@ from logger.transforms.prefix_transform import PrefixTransform
 from logger.transforms.timestamp_transform import TimestampTransform
 from logger.writers.text_file_writer import TextFileWriter
 from logger.writers.udp_writer import UDPWriter
+
+UNDERWAY_RVDAS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 ############################################################################
 def parse_ships(filepath):
@@ -134,18 +137,16 @@ def main():
     parser.add_argument('--shipConfigsFile', help='Path to the device configurations file')
     parser.add_argument('--deviceConfigsFile', help='Path to the ship configurations file')
     parser.add_argument('--ship', help='Ship config to run', required=True)
-    # TODO: implement interval?
-    # parser.add_argument('--interval', help='The amount of time (in seconds) between each data retrieval.', type=int)
     args = parser.parse_args()
 
     # Parse configuration files
-    shipConfigsFile = 'conf/ship.conf' if not args.shipConfigsFile else args.shipConfigsFile
+    shipConfigsFile = args.shipConfigsFile if args.shipConfigsFile else os.path.join(UNDERWAY_RVDAS_DIR, 'conf/ship.conf')
     ships = parse_ships(shipConfigsFile)
     if not any(config['ship'].lower() == args.ship.lower() for config in ships):
         # Invalid ship configuration
         print(f'Ship configuration {args.ship} not found.')
         sys.exit()
-    deviceConfigsFile = 'conf/device.conf' if not args.deviceConfigsFile else args.deviceConfigsFile
+    deviceConfigsFile = args.deviceConfigsFile if args.deviceConfigsFile else os.path.join(UNDERWAY_RVDAS_DIR, 'conf/device.conf')
     devices = parse_devices(deviceConfigsFile)
     config = parse_config(ships, devices)
 

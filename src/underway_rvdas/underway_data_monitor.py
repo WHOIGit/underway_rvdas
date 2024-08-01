@@ -127,7 +127,7 @@ def setup_listener(device, data_type, in_port, input_type, baud_rate, out_destin
 
 ############################################################################
 
-if __name__ == '__main__':
+def main():
     # First, set up logging 
     LOGGING_FORMAT = '%(asctime)-15s %(message)s'
     logging.basicConfig(format=LOGGING_FORMAT)
@@ -172,3 +172,7 @@ if __name__ == '__main__':
         ))
     [thread.start() for thread in threads]
     [thread.join() for thread in threads]
+
+# Start program
+if __name__ == '__main__':
+    main()

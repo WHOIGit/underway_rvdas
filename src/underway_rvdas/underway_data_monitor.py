@@ -12,11 +12,6 @@ from logger.writers.text_file_writer import TextFileWriter
 from logger.writers.udp_writer import UDPWriter
 
 ############################################################################
-def _read_property(property):
-    # Utility function to read properties
-    return next((prop.split("=")[1] for prop in properties if prop.startswith(property)), None)
-
-############################################################################
 def parse_ships(filepath):
     """Parse ship configuration data from a file.
     filepath    The path of the file to parse from.
@@ -153,6 +148,11 @@ def main():
     deviceConfigsFile = 'conf/device.conf' if not args.deviceConfigsFile else args.deviceConfigsFile
     devices = parse_devices(deviceConfigsFile)
     config = parse_config(ships, devices)
+
+    
+    # Utility function to read properties
+    def _read_property(property):
+        return next((prop.split("=")[1] for prop in properties if prop.startswith(property)), None)
 
     # Set up readers, writers, and transforms for each device
     threads = []

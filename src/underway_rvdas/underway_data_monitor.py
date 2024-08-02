@@ -136,6 +136,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--shipConfigsFile', help='Path to the device configurations file')
     parser.add_argument('--deviceConfigsFile', help='Path to the ship configurations file')
+    # parser.add_argument('--shipList', help='List the currently defined ship configurations')
+    # parser.add_argument('--deviceList', help='List the currently defined device configurations')
     parser.add_argument('--ship', help='Ship config to run', required=True)
     args = parser.parse_args()
 
@@ -150,7 +152,14 @@ def main():
     devices = parse_devices(deviceConfigsFile)
     config = parse_config(ships, devices)
 
-    
+    # # If user wants a list of the configs, print them out and return
+    # if args.shipList:
+    #     print(f'Defined ship configurations:\n{ships}')
+    #     return
+    # if args.deviceList:
+    #     print(f'Defined device configurations:\n{devices}')
+    #     return
+
     # Utility function to read properties
     def _read_property(property):
         return next((prop.split("=")[1] for prop in properties if prop.startswith(property)), None)

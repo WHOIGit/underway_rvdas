@@ -91,7 +91,7 @@ def rewrite_conf_file(filepath, device_conf):
             # Overwrite file with updated device configurations
             for conf in device_conf:
                 # device name in brackets and list one device per line below
-                file.write(f'[{conf['device']}]\n')
+                file.write(f"[{conf['device']}]\n")
                 for prop in conf['properties']:
                     file.write(f'{prop}\n')
                 # Line break between device configurations
@@ -125,7 +125,7 @@ device_conf = parse_conf_file(conf_file)
 # Check for list method first
 if method == 'list':
     print('device configurations:')
-    [print(f' - {conf['device']}: {conf['properties']}') for conf in device_conf]
+    [print(f" - {conf['device']}: {conf['properties']}") for conf in device_conf]
     sys.exit()
 
 # Check for delete first, to avoid unncessarily loading device list

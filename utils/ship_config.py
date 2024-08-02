@@ -72,7 +72,7 @@ def update_ship_conf(conf_name, ship_conf, available_devices):
         sys.exit()
     device_list = current_conf['devices']
     print(f'Available devices:\n{available_devices}\n')
-    print(f'Current devices in {conf_name} configuration:\n{current_conf['devices']}\n')
+    print(f"Current devices in {conf_name} configuration:\n{current_conf['devices']}\n")
     print(f'Enter \'save\' to save configuration. Enter device name to add to \'{conf_name}\':')
     # Convert all items in available_devices and device_list to lowercase for string matching
     available_devices = [i.lower() for i in available_devices]
@@ -124,7 +124,7 @@ def rewrite_conf_file(filepath, ship_conf):
             # Overwrite file with updated ship configurations
             for conf in ship_conf:
                 # Ship name in brackets and list one device per line below
-                file.write(f'[{conf['ship']}]\n')
+                file.write(f"[{conf['ship']}]\n")
                 for device in conf['devices']:
                     file.write(f'{device}\n')
                 # Line break between ship configurations
@@ -159,7 +159,7 @@ ship_conf = parse_conf_file(conf_file)
 # Check for list method first
 if method == 'list':
     print('Ship configurations:')
-    [print(f' - {conf['ship']}: {conf['devices']}') for conf in ship_conf]
+    [print(f" - {conf['ship']}: {conf['devices']}") for conf in ship_conf]
     sys.exit()
 
 # Check for delete first, to avoid unncessarily loading device list
@@ -168,7 +168,7 @@ if method == 'delete':
     # Remove element with conf['ship'] == conf_name
     ship_conf = [conf for conf in ship_conf if conf['ship'] != conf_name]
 # Load list of devices from device conf
-available_devices = ['barryserial_gps', 'barryserial_met', 'USBL', 'SBE45', 'SBE48', 'POSMV'] #device_conf.get_all()
+available_devices = ['barryserial_gps', 'barryserial_met', 'USBL', 'SBE45', 'SBE48', 'POSMV'] #device_conf.get_all() #TODO change this
 if method == 'create':
     create_ship_conf(conf_name, ship_conf, available_devices)
 if method == 'update':

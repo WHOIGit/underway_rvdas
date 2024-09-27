@@ -19,6 +19,7 @@ classifiers = [
 
 [project.scripts]
 underway_rvdas = "underway_rvdas.underway_data_monitor:main"
+underway_rvdas_csv = "underway_rvdas_csv.underway_rvdas_csv:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/underway_rvdas"]
+packages = [ "underway_rvdas", "underway_rvdas_csv" ]

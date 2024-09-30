@@ -2,10 +2,12 @@ import argparse
 import configparser
 import logging
 import pprint
+import os
 import random
 import re
 from collections import defaultdict
 from datetime import datetime
+# from logger.transforms.timestamp_transform import TimestampTransform
 
 def get_abstract_array_element(n):
     # TODO: get abstract array element n
@@ -16,30 +18,66 @@ def get_derived_data_element(n):
     return f"{random.uniform(0, 10)}_but_derived"
 
 def setup_listeners(root_dir, inputs, outputs):
-    print(root_dir)
-    pprint.pp(inputs)
-    pprint.pp(outputs)
+    # print(root_dir)
+    # pprint.pp(inputs)
+    # pprint.pp(outputs)
     
+    for output_name, output_data in outputs.items():
+        # Output global config
+        print(f'Output {output_name}')
+        output_prefix = output_data['output_prefix']
+        output_delimeter = output_data['output_delimeter']
 
-    # # Add datetime then prefix to beginning of record
-    # dt = datetime.today()
-    # record = dt.strftime('%Y/%m/%d') + output_delimeter + dt.strftime('%H:%M:%S.%f')[:-3] + output_delimeter
-    # output_prefix = config[section].get('output_prefix', None)
-    # if output_prefix:
-    #     record += output_prefix + output_delimeter
+        # Header string
+        date_header_string = output_data['date_header_string']
+        time_header_string = output_data['time_header_string']
+        header_string = f'{date_header_string}{output_delimeter}{time_header_string}{output_delimeter}{output_prefix}'
+        for outfield_header_string in output_data['outfield_header_strings']:
+            for header_string_index, header_string_value in outfield_header_string.items():
+                header_string += f'{header_string_value}{output_delimeter}'
+        header_string = header_string[:-(len(output_delimeter))]
 
-    # # Add data elements to record
-    # for outfield_data_element in outfield_data_elements:
-    #         # Key is outfield_abstract_index_n
-    #         if outfield_data_element.startswith(outfield_data_element_types[0]):
-    #             n = outfield_data_element[len(outfield_data_element_types[0]):]
-    #             array_element = get_abstract_array_element(n)
-    #             record += str(array_element) + output_delimeter
-    #         # Key is outfield_type_n
-    #         elif outfield_data_element.startswith(outfield_data_element_types[1]):
-    #             n = outfield_data_element[len(outfield_data_element_types[1]):]
-    #             derived_data_element = get_derived_data_element(n)
-    #             record += derived_data_element + output_delimeter
+        # Output destinations
+        for destination in output_data['destinations']:
+            for destination_name, destination_data in destination.items():
+                # Check for destination prefix
+                if destination_name == 'destination_prefix':
+                    destination_prefix = destination_name
+                    continue
+                
+                # Check for destination type and pathname override
+                destination_type = None
+                destination_pathname_override = None
+                destination_filename_prefix = ''
+                destination_filename_extension = 'csv'
+
+                for item in destination_data:
+                    if f'{destination_name}_type' in item:
+                        destination_type = item[f'{destination_name}_type']
+                    if f'{destination_name}_pathname' in item:
+                        root_dir = item[f'{destination_name}_pathname']
+                    if f'{destination_name}_filename_prefix' in item:
+                        destination_filename_prefix = item[f'{destination_name}_filename_prefix']
+                    if f'{destination_name}_filename_extension' in item:
+                        destination_filename_extension = item[f'{destination_name}_filename_extension']
+                
+                # Destination is a file
+                if destination_type == 'file':
+                    # Check for filepath override
+                    if destination_pathname_override:
+                        root_dir = destination_pathname_override                        
+                    # Generate filepath
+                    timestamp = datetime.now().strftime("%y%m%d_%H%M")
+                    filepath = os.path.join(root_dir, f'{destination_prefix}{destination_filename_prefix}{timestamp}.{destination_filename_extension}')
+                    print(filepath)
+                    # writer = TextFileWriter(filename=filepath, header=header_string)
+                # Destination is a udp port
+                elif destination_type == 'udp':
+                    pass
+
+        # Generic transform for every destination, adds timestamp and output prefix
+        # tf = f'%Y/%m/%d{output_delimeter}%H:%M:%S.%f{output_delimeter}{output_prefix}{output_delimeter}'
+        # timestamp_transform = TimestampTransform(time_format=tf)
 
 def startswith_filter(filter):
     if isinstance(filter, (list, tuple)):
@@ -100,7 +138,7 @@ def main():
     validate_config(config)
 
     # General section
-    root_dir = config['general']['root_dir']
+    root_dir = config['general']['root_dir'].replace('"', '')
     daily_logfiles_flag = config['general'].getboolean('daily_logfiles_flag', True)
 
     # Inputs section
@@ -195,7 +233,6 @@ def main():
         outfield_type_keys = filter(outfield_type_filter, config.options(section))
         outfield_types = [{ key: config[section].get(key).replace('"', '') } for key in outfield_type_keys ]
         outfield_data_elements = outfield_abstract_indexes + outfield_types
-
 
         # Destinations
         destinations = []

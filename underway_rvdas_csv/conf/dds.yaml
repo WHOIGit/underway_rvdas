@@ -1,0 +1,87 @@
+# cruise:
+#   id: EXAMPLE_CRUISE
+#   start: "2024-05-28"
+#   end: "2024-06-28"
+
+loggers:
+  gyro:
+    configs:
+    - gyro->off
+    - gyro->file/net/cached
+  sbe48:
+    configs:
+    - sbe48->off
+    - sbe48->file/net/cached
+
+configs:
+  gyro->off:
+    name: gyro->off
+
+  gyro->file/net/cached:
+    name: gyro->file/net/cached
+    readers:
+      - class: SerialReader
+        kwargs:
+          port: /tmp/tty_gyro
+          baudrate: 9600
+    transforms:
+      - class: TimestampTransform
+      - class: PrefixTransform
+        kwargs:
+          prefix: gyro
+      # - class: ParseTransform
+      #   kwargs:
+      #     definition_path: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/test/dds_gyro.yaml
+    writers:
+      - class: LogfileWriter
+        kwargs:
+          filebase: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/test/log/gyro
+      - class: NetworkWriter
+        kwargs:
+          network: ':6224'
+      - class: CachedDataWriter
+        kwargs:
+          data_server: localhost:8766
+    kwargs:
+      verbose: True
+
+  sbe48->off:
+    name: sbe48->off
+
+  sbe48->file/net/cached:
+    name: sbe48->file/net/cached
+    readers:
+      - class: SerialReader
+        kwargs:
+          port: /tmp/tty_sbe48
+          baudrate: 9600
+    transforms:
+      - class: TimestampTransform
+      - class: PrefixTransform
+        kwargs:
+          prefix: sbe48
+      # - class: ParseTransform
+      #   kwargs:
+      #     definition_path: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/test/dds_sbe48.yaml
+    writers:
+      - class: LogfileWriter
+        kwargs:
+          filebase: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/test/log/sbe48
+      - class: NetworkWriter
+        kwargs:
+          network: ':6225'
+      - class: CachedDataWriter
+        kwargs:
+          data_server: localhost:8766
+    kwargs:
+      verbose: True
+
+modes:
+  off:
+    gyro: gyro->off
+    sbe48: sbe48->off
+  underway:
+    gyro: gyro->file/net/cached
+    sbe48: sbe48->file/net/cached
+
+default_mode: "underway"

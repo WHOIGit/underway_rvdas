@@ -1,0 +1,22 @@
+# gyro.yaml
+sensors:
+  gyro:
+    fields:
+      Heading:
+        pattern: '\$HEHDT,(\d+\.\d+),T\*'
+        transform: float
+      RateOfTurn:
+        pattern: '\$TIROT,([+-]?\d+\.\d+),A\*'
+        transform: float
+
+    # Optional: converters to create additional fields
+    converters:
+      HeadingDeg:
+        source: Heading
+        algorithm:
+          type: round
+          precision: 1
+
+# If there are sentences you want to ignore, you can add them here
+    # ignore:
+    #   - pattern: '\$PPLAN,.*'

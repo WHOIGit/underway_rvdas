@@ -1,22 +1,14 @@
-# gyro.yaml
-sensors:
+# Devices
+devices:
   gyro:
+    device_type: "Gyro"
     fields:
-      Heading:
-        pattern: '\$HEHDT,(\d+\.\d+),T\*'
-        transform: float
-      RateOfTurn:
-        pattern: '\$TIROT,([+-]?\d+\.\d+),A\*'
-        transform: float
+      HeadingTrue: "GyroHeadingTrue"
+      CheckSum: "GyroCheckSum"
 
-    # Optional: converters to create additional fields
-    converters:
-      HeadingDeg:
-        source: Heading
-        algorithm:
-          type: round
-          precision: 1
-
-# If there are sentences you want to ignore, you can add them here
-    # ignore:
-    #   - pattern: '\$PPLAN,.*'
+# Device types
+device_types:
+  Gyro:
+    format:
+      HEHDT:
+        - "GYRO $HEHDT,{HeadingTrue:f},T*{CheckSum:x}"

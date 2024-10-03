@@ -29,21 +29,24 @@ configs:
       - class: PrefixTransform
         kwargs:
           prefix: gyro
-      # - class: ParseTransform
       #   kwargs:
-      #     definition_path: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/test/dds_gyro.yaml
+      #     sep: ''
+      #     time_format: '%Y/%m/%d, %H:%M:%S.%f, '
+      - class: ParseTransform
+        kwargs:
+        #   record_format: '{data_id:w} {field_string}'
+          definition_path: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/test/dds_gyro.yaml
     writers:
-      - class: LogfileWriter
+      - class: TextFileWriter
         kwargs:
-          filebase: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/test/log/gyro
-      - class: NetworkWriter
-        kwargs:
-          network: ':6224'
+          filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/test/log/gyro
+          truncate: True
+      # - class: NetworkWriter
+      #   kwargs:
+      #     network: ':6224'
       - class: CachedDataWriter
         kwargs:
           data_server: localhost:8766
-    kwargs:
-      verbose: True
 
   sbe48->off:
     name: sbe48->off
@@ -56,32 +59,86 @@ configs:
           port: /tmp/tty_sbe48
           baudrate: 9600
     transforms:
-      - class: TimestampTransform
-      - class: PrefixTransform
-        kwargs:
-          prefix: sbe48
-      # - class: ParseTransform
+      # - class: TimestampTransform
       #   kwargs:
+      #     sep: ''
+      #     time_format: '%Y/%m/%d, %H:%M:%S.%f, '
+      - class: ParseTransform
+        kwargs:
+          record_format: '{data_id:w} {field_string}'
       #     definition_path: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/test/dds_sbe48.yaml
     writers:
-      - class: LogfileWriter
+      - class: TextFileWriter
         kwargs:
-          filebase: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/test/log/sbe48
-      - class: NetworkWriter
-        kwargs:
-          network: ':6225'
+          filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/test/log/sbe48
+          truncate: True
+      # - class: NetworkWriter
+      #   kwargs:
+      #     network: ':6225'
       - class: CachedDataWriter
         kwargs:
           data_server: localhost:8766
-    kwargs:
-      verbose: True
+
+  true_wind->off:
+    name: true_wind->off
+  
+  true_wind->on:
+    name: true_wind->on
+    readers:
+      - class: CachedDataReader
+        kwargs:
+          data_server: localhost:8766
+          logging_level: DEBUG
+          subscription:
+            fields:
+              GyroHeadingTrue:
+                seconds: 0
+              # S330CourseTrue:
+              #   seconds: 0
+              # S330HeadingTrue:
+              #   seconds: 0
+              # S330SpeedKt:
+              #   seconds: 0
+              # MwxPortRelWindDir:
+              #   seconds: 0
+              # MwxPortRelWindSpeed:
+              #   seconds: 0
+    transforms:
+      # - class: TrueWindsTransform
+      #   kwargs:
+      #     wind_dir_field: MwxPortRelWindDir
+      #     wind_speed_field: MwxPortRelWindSpeed
+      #     course_field: S330CourseTrue
+      #     heading_field: S330HeadingTrue
+      #     speed_field: S330SpeedKt
+      #     convert_speed_factor: 0.5144
+      #     update_on_fields:
+      #     - MwxPortRelWindDir
+      #     apparent_dir_name: PortApparentWindDir
+      #     true_dir_name: PortTrueWindDir
+      #     true_speed_name: PortTrueWindSpeed
+      - class: PrefixTransform
+        kwargs:
+          prefix: 'CACHED DATA '
+    writers:
+      # - class: CachedDataWriter
+      #   kwargs:
+      #     data_server: localhost:8766
+      - class: TextFileWriter
+        kwargs:
+          filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/test/log/true_wind_transformed
+          truncate: True
 
 modes:
   off:
     gyro: gyro->off
     sbe48: sbe48->off
+    true_wind: true_wind->off
   underway:
+    # gyro: gyro->off
     gyro: gyro->file/net/cached
-    sbe48: sbe48->file/net/cached
+    sbe48: sbe48->off
+    # sbe48: sbe48->file/net/cached
+    true_wind: true_wind->on
 
 default_mode: "underway"

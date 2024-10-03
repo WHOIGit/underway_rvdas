@@ -1,0 +1,70 @@
+loggers:
+  publisher:
+    configs:
+    - publisher->off
+    - publisher->ready
+  subscriber:
+    configs:
+    - subscriber->off
+    - subscriber->ready
+  
+configs:
+  publisher->off:
+    name: publisher->off
+
+  publisher->ready:
+    name: publisher->ready
+    readers:
+      - class: SerialReader
+        kwargs:
+          port: /tmp/tty_gyro
+          baudrate: 9600
+    transforms:
+      - class: TimestampTransform
+      - class: PrefixTransform
+        kwargs:
+          prefix: gyro
+      - class: ParseTransform
+        kwargs:
+          definition_path: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/test/dds_gyro.yaml
+    writers:
+      - class: TextFileWriter
+        kwargs:
+          filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/test/log/gyro
+          truncate: True
+      - class: CachedDataWriter
+        kwargs:
+            data_server: localhost:8766
+
+  subscriber->off:
+    name: subscriber->off
+
+  subscriber->ready:
+    name: subscriber->ready
+    readers:
+      - class: CachedDataReader
+        kwargs:
+          data_server: localhost:8766
+          subscription:
+            fields:
+              GyroHeadingTrue:
+                seconds: 0
+    # transforms:
+    #   - class: PrefixTransform
+    #     kwargs:
+    #       prefix: "CACHED DATA -> "
+    writers:
+      - class: TextFileWriter
+        kwargs:
+          filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/test/log/true_wind_transformed
+          truncate: True
+
+modes:
+  off:
+    publisher: publisher->off
+    subscriber: subscriber->off
+  ready:
+    publisher: publisher->ready
+    subscriber: subscriber->ready
+
+default_mode: "ready"

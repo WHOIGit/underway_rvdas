@@ -1,0 +1,236 @@
+# Goal - with data from the Atlantis, have multiple outputs each take data from multiple of those inputs
+# Example:
+# Input 1 - produces data A, B
+# Input 2 - produces data C, D
+# Output 1 - consumes data A, C
+# Output 2 - consumes data B, D
+
+loggers:
+  pcod:
+    configs:
+    - pcod->file/net/cached
+  gyr1:
+    configs:
+    - gyr1->file/net/cached
+  # psxn:
+  #   configs:
+  #   - psxn->file/net/cached
+  winch:
+    configs:
+    - winch->file/net/cached
+  output_all:
+    configs:
+    - output_all->file/net/cached
+
+configs:
+
+  ###################################################################
+  ## GPS
+  ###################################################################
+  pcod->file/net/cached:
+    name: pcod->file/net/cached
+    readers:
+      - class: UDPReader
+        kwargs:
+          port: 55000
+    transforms:
+      - class: TimestampTransform
+      - class: PrefixTransform
+        kwargs:
+          prefix: "GPS"
+      - class: ParseTransform
+        kwargs:
+          definition_path: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/conf/devices/at_devices.yaml
+    writers:
+      - class: CachedDataWriter
+        kwargs:
+          data_server: localhost:8766
+
+  ###################################################################
+  ## HEHDT
+  ###################################################################
+  gyr1->file/net/cached:
+    name: gyr1->file/net/cached
+    readers:
+      - class: UDPReader
+        kwargs:
+          port: 55100
+    transforms:
+      - class: TimestampTransform
+      - class: PrefixTransform
+        kwargs:
+          prefix: "GYR1"
+      - class: ParseTransform
+        kwargs:
+          definition_path: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/conf/devices/at_devices.yaml
+    writers:
+      - class: CachedDataWriter
+        kwargs:
+          data_server: localhost:8766
+
+  ###################################################################
+  ## PSXN
+  ###################################################################
+  # psxn->file/net/cached:
+  #   name: psxn->file/net/cached
+  #   readers:
+  #     - class: UDPReader
+  #       kwargs:
+  #         port: 55108
+  #   writers:
+  #     - class: CachedDataWriter
+  #       kwargs:
+  #         data_server: localhost:8766
+
+  ###################################################################
+  ## Winch
+  ###################################################################
+  winch->file/net/cached:
+    name: winch->file/net/cached
+    readers:
+      - class: UDPReader
+        kwargs:
+          port: 55801
+    transforms:
+      - class: TimestampTransform
+      - class: PrefixTransform
+        kwargs:
+          prefix: "WINCH"
+      - class: ParseTransform
+        kwargs:
+          definition_path: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/conf/devices/at_devices.yaml
+    writers:
+      - class: CachedDataWriter
+        kwargs:
+          data_server: localhost:8766
+
+  ###################################################################
+  ## Output
+  ###################################################################
+  output_all->file/net/cached:
+    name: output_all->file/net/cached
+    readers:
+      - class: CachedDataReader
+        kwargs:
+          data_server: localhost:8766
+          subscription:
+            fields:
+              Gyr1HeadingTrue:
+                seconds: 0
+              WinchName:
+                seconds: 0
+              WinchNoIdea:
+                seconds: 0
+              WinchTension:
+                seconds: 0
+              WinchPayoutSpeed:
+                seconds: 0
+              WinchPayout:
+                seconds: 0
+              # GLL fields
+              GpsGPGLLLatitude:
+                seconds: 0
+              GpsGPGLLNorS:
+                seconds: 0
+              GpsGPGLLLongitude:
+                seconds: 0
+              GpsGPGLLEorW:
+                seconds: 0
+              GpsGPGLLTime:
+                seconds: 0
+              GpsGPGLLStatus:
+                seconds: 0
+              GpsGPGLLChecksum:
+                seconds: 0
+              # VTG fields
+              GpsGPVTGCourseTrue:
+                seconds: 0
+              GpsGPVTGCourseMag:
+                seconds: 0
+              GpsGPVTGSpeedKt:
+                seconds: 0
+              GpsGPVTGSpeedKm:
+                seconds: 0
+              GpsGPVTGChecksum:
+                seconds: 0
+              # ZDA fields
+              GpsGPZDATime:
+                seconds: 0
+              GpsGPZDADay:
+                seconds: 0
+              GpsGPZDAMonth:
+                seconds: 0
+              GpsGPZDAYear:
+                seconds: 0
+              GpsGPZDALocalHours:
+                seconds: 0
+              GpsGPZDALocalMinutes:
+                seconds: 0
+              GpsGPZDAChecksum:
+                seconds: 0
+              # RMC fields
+              GpsGPRMCTime:
+                seconds: 0
+              GpsGPRMCStatus:
+                seconds: 0
+              GpsGPRMCLatitude:
+                seconds: 0
+              GpsGPRMCNorS:
+                seconds: 0
+              GpsGPRMCLongitude:
+                seconds: 0
+              GpsGPRMCEorW:
+                seconds: 0
+              GpsGPRMCSpeedKt:
+                seconds: 0
+              GpsGPRMCCourseTrue:
+                seconds: 0
+              GpsGPRMCDate:
+                seconds: 0
+              GpsGPRMCMagneticVar:
+                seconds: 0
+              GpsGPRMCMagneticVarEorW:
+                seconds: 0
+              GpsGPRMCChecksum:
+                seconds: 0
+              # GGA fields
+              GpsGPGGATime:
+                seconds: 0
+              GpsGPGGALatitude:
+                seconds: 0
+              GpsGPGGANorS:
+                seconds: 0
+              GpsGPGGALongitude:
+                seconds: 0
+              GpsGPGGAEorW:
+                seconds: 0
+              GpsGPGGAFixQuality:
+                seconds: 0
+              GpsGPGGANumSatellites:
+                seconds: 0
+              GpsGPGGAHDOP:
+                seconds: 0
+              GpsGPGGAAltitude:
+                seconds: 0
+              GpsGPGGAGeoidHeight:
+                seconds: 0
+              GpsGPGGADGPSAge:
+                seconds: 0
+              GpsGPGGADGPSStationID:
+                seconds: 0
+              GpsGPGGAChecksum:
+                seconds: 0
+    writers:
+      - class: TextFileWriter
+        kwargs:
+          filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/test/log/atlantis.log
+          truncate: True
+
+modes:
+  underway:
+    pcod: pcod->file/net/cached
+    gyr1: gyr1->file/net/cached
+    output_all: output_all->file/net/cached
+    winch: winch->file/net/cached
+
+default_mode: "underway"

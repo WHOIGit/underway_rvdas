@@ -1,0 +1,131 @@
+# Devices
+devices:
+  GYR1:
+    device_type: "gyr1"
+    fields:
+      HeadingTrue: "Gyr1HeadingTrue"
+      CheckSum: "Gyr1CheckSum"
+  
+  WINCH:
+    device_type: "bwnc"
+    fields:
+      Name: "WinchName"
+      NoIdea: "WinchNoIdea"
+      Tension: "WinchTension"
+      PayoutSpeed: "WinchPayoutSpeed"
+      Payout: "WinchPayout"
+
+  GPS:
+    device_type: "gps"
+    fields:
+      # GLL fields
+      Latitude: "GpsGPGLLLatitude"
+      NorS: "GpsGPGLLNorS"
+      Longitude: "GpsGPGLLLongitude"
+      EorW: "GpsGPGLLEorW"
+      GLLTime: "GpsGPGLLTime"
+      GLLStatus: "GpsGPGLLStatus"
+      GLLChecksum: "GpsGPGLLChecksum"
+      # VTG fields
+      CourseTrue: "GpsGPVTGCourseTrue"
+      CourseMag: "GpsGPVTGCourseMag"
+      SpeedKt: "GpsGPVTGSpeedKt"
+      SpeedKm: "GpsGPVTGSpeedKm"
+      VTGChecksum: "GpsGPVTGChecksum"
+      # ZDA fields
+      ZDATime: "GpsGPZDATime"
+      Day: "GpsGPZDADay"
+      Month: "GpsGPZDAMonth"
+      Year: "GpsGPZDAYear"
+      LocalHours: "GpsGPZDALocalHours"
+      LocalMinutes: "GpsGPZDALocalMinutes"
+      ZDAChecksum: "GpsGPZDAChecksum"
+      # RMC fields
+      RMCTime: "GpsGPRMCTime"
+      RMCStatus: "GpsGPRMCStatus"
+      RMCLatitude: "GpsGPRMCLatitude"
+      RMCNorS: "GpsGPRMCNorS"
+      RMCLongitude: "GpsGPRMCLongitude"
+      RMCEorW: "GpsGPRMCEorW"
+      RMCSpeedKt: "GpsGPRMCSpeedKt"
+      RMCCourseTrue: "GpsGPRMCCourseTrue"
+      Date: "GpsGPRMCDate"
+      MagneticVar: "GpsGPRMCMagneticVar"
+      MagneticVarEorW: "GpsGPRMCMagneticVarEorW"
+      RMCChecksum: "GpsGPRMCChecksum"
+      # GGA fields
+      GGATime: "GpsGPGGATime"
+      GGALatitude: "GpsGPGGALatitude"
+      GGANorS: "GpsGPGGANorS"
+      GGALongitude: "GpsGPGGALongitude"
+      GGAEorW: "GpsGPGGAEorW"
+      FixQuality: "GpsGPGGAFixQuality"
+      NumSatellites: "GpsGPGGANumSatellites"
+      HDOP: "GpsGPGGAHDOP"
+      Altitude: "GpsGPGGAAltitude"
+      GeoidHeight: "GpsGPGGAGeoidHeight"
+      DGPSAge: "GpsGPGGADGPSAge"
+      DGPSStationID: "GpsGPGGADGPSStationID"
+      GGAChecksum: "GpsGPGGAChecksum"
+
+
+
+# Device types
+device_types:
+  gyr1:
+    format:
+      HEHDT:
+        - "$HEHDT,{HeadingTrue:f},T*{CheckSum:x}"
+
+  bwnc:
+    format: "{Name},{NoIdea},,{Tension},,{PayoutSpeed},,{Payout}"
+
+  gps:
+    format:
+      GLL: "$GPGLL,{Latitude:nlat},{NorS:w},{Longitude:nlat},{EorW:w},{Time:f},{Status:w}*{Checksum:x}"
+      VTG: "$GPVTG,{CourseTrue:of},T,{CourseMag:of},M,{SpeedKt:of},N,{SpeedKm:of},K*{Checksum:x}"
+      ZDA: "$GPZDA,{Time:f},{Day:d},{Month:d},{Year:d},{LocalHours:od},{LocalMinutes:od},*{Checksum:x}"
+      RMC: "$GPRMC,{Time:f},{Status:w},{Latitude:nlat},{NorS:w},{Longitude:nlat},{EorW:w},{SpeedKt:f},{CourseTrue:f},{Date:w},{MagneticVar:of},{MagneticVarEorW:ow}*{Checksum:x}"
+      GGA: "$GPGGA,{Time:f},{Latitude:nlat},{NorS:w},{Longitude:nlat},{EorW:w},{FixQuality:d},{NumSatellites:d},{HDOP:f},{Altitude:f},M,{GeoidHeight:f},M,{DGPSAge:of},{DGPSStationID:ow}*{Checksum:x}"
+    # Optional metadata to help make sense of the parsed values.
+    fields:
+      CourseTrue:
+        units: "degrees"
+        description: "True course"    
+      CourseMag:
+        units: "degrees"
+        description: "Magnetic course"
+      SpeedKt:
+        units: "knots"
+        description: "Speed over ground in knots"
+      SpeedKm:
+        units: "km/hour"
+        description: "Speed over ground in kilometers per hour"
+      GPSTime:
+        units: ""
+        description: ""
+      GPSDay:
+        units: ""
+        description: ""
+      GPSMonth:
+        units: ""
+        description: ""
+      GPSYear:
+        units: ""
+        description: ""
+      GPSDate:
+        units: ""
+        description: ""
+      LocalHours:
+        units: ""
+        description: ""
+      Latitude:
+        units: "degrees"
+        description: "Latitude in degrees; north or south depends on NorS"
+      NorS:
+        description: "N if Latitude value is north, S otherwise"
+      Longitude:
+        units: "degrees"
+        description: "Longitude in degrees; east or west depends on value of EorW"
+      EorW:
+        description: "E if Longitude value is east, W otherwise"

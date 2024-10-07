@@ -21,6 +21,12 @@ loggers:
   output_all:
     configs:
     - output_all->file/net/cached
+  output_position:
+    configs:
+    - output_position->file/net/cached
+  output_speed:
+    configs:
+    - output_speed->file/net/cached
 
 configs:
 
@@ -140,8 +146,6 @@ configs:
                 seconds: 0
               GpsGPGLLStatus:
                 seconds: 0
-              GpsGPGLLChecksum:
-                seconds: 0
               # VTG fields
               GpsGPVTGCourseTrue:
                 seconds: 0
@@ -150,8 +154,6 @@ configs:
               GpsGPVTGSpeedKt:
                 seconds: 0
               GpsGPVTGSpeedKm:
-                seconds: 0
-              GpsGPVTGChecksum:
                 seconds: 0
               # ZDA fields
               GpsGPZDATime:
@@ -165,8 +167,6 @@ configs:
               GpsGPZDALocalHours:
                 seconds: 0
               GpsGPZDALocalMinutes:
-                seconds: 0
-              GpsGPZDAChecksum:
                 seconds: 0
               # RMC fields
               GpsGPRMCTime:
@@ -190,8 +190,6 @@ configs:
               GpsGPRMCMagneticVar:
                 seconds: 0
               GpsGPRMCMagneticVarEorW:
-                seconds: 0
-              GpsGPRMCChecksum:
                 seconds: 0
               # GGA fields
               GpsGPGGATime:
@@ -218,19 +216,75 @@ configs:
                 seconds: 0
               GpsGPGGADGPSStationID:
                 seconds: 0
-              GpsGPGGAChecksum:
-                seconds: 0
     writers:
       - class: TextFileWriter
         kwargs:
           filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/test/log/atlantis.log
+          truncate: True
+  output_speed->file/net/cached:
+    name: output_speed->file/net/cached
+    readers:
+      - class: CachedDataReader
+        kwargs:
+          data_server: localhost:8766
+          subscription:
+            fields:
+              GpsGPRMCSpeedKt:
+                seconds: 0
+              GpsGPVTGSpeedKt:
+                seconds: 0
+              GpsGPVTGSpeedKm:
+                seconds: 0
+    writers:
+      - class: TextFileWriter
+        kwargs:
+          filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/test/log/output_speed.log
+          truncate: True
+  output_position->file/net/cached:
+    name: output_position->file/net/cached
+    readers:
+      - class: CachedDataReader
+        kwargs:
+          data_server: localhost:8766
+          subscription:
+            fields:
+              GpsGPGLLLatitude:
+                seconds: 0
+              GpsGPGLLNorS:
+                seconds: 0
+              GpsGPGLLLongitude:
+                seconds: 0
+              GpsGPGLLEorW:
+                seconds: 0
+              GpsGPRMCLatitude:
+                seconds: 0
+              GpsGPRMCNorS:
+                seconds: 0
+              GpsGPRMCLongitude:
+                seconds: 0
+              GpsGPRMCEorW:
+                seconds: 0
+              GpsGPGGALatitude:
+                seconds: 0
+              GpsGPGGANorS:
+                seconds: 0
+              GpsGPGGALongitude:
+                seconds: 0
+              GpsGPGGAEorW:
+                seconds: 0
+    writers:
+      - class: TextFileWriter
+        kwargs:
+          filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/test/log/output_position.log
           truncate: True
 
 modes:
   underway:
     pcod: pcod->file/net/cached
     gyr1: gyr1->file/net/cached
-    output_all: output_all->file/net/cached
     winch: winch->file/net/cached
+    output_all: output_all->file/net/cached
+    output_position: output_position->file/net/cached
+    output_speed: output_speed->file/net/cached
 
 default_mode: "underway"

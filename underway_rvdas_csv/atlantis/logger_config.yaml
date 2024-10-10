@@ -1,0 +1,309 @@
+loggers:
+  gps:
+    configs:
+    - gps->off
+    - gps->file/cached
+  psxn:
+    configs:
+    - psxn->off
+    - psxn->file/cached
+  winch:
+    configs:
+    - winch->off
+    - winch->file/cached
+  output_pos:
+    configs:
+    - output_pos->off
+    - output_pos->file
+  output_psxn:
+    configs:
+    - output_psxn->off
+    - output_psxn->file
+  output_pos_normalized:
+    configs:
+    - output_pos_normalized->off
+    - output_pos_normalized->file
+
+modes:
+  'off':
+    gps: gps->off
+    psxn: psxn->off
+    winch: winch->off
+    output_pos: output_pos->off
+    output_psxn: output_psxn->off
+    output_pos_normalized: output_pos_normalized->off
+  underway:
+    gps: gps->file/cached
+    psxn: psxn->file/cached
+    winch: winch->file/cached
+    output_pos: output_pos->file
+    output_psxn: output_psxn->file
+    output_pos_normalized: output_pos_normalized->file
+
+default_mode: "underway"
+
+configs:
+  gps->off: {}
+  psxn->off: {}
+  winch->off: {}
+  output_pos->off: {}
+  output_psxn->off: {}
+  output_pos_normalized->off: {}
+
+  ###################################################################
+  ## GPS
+  ###################################################################
+  gps->file/cached:
+    name: gps->file/cached
+    # First, read UDP or serial data
+    readers:
+    - class: UDPReader
+      kwargs:
+        port: 55000
+    # Next, add timestamp and prefix since all outputs share these
+    transforms:
+    - class: TimestampTransform
+    - class: PrefixTransform
+      kwargs:
+        prefix: "GPS"
+    writers:
+    # Next, add a parse transform only for the cached data writer
+    - class: ComposedWriter
+      kwargs:
+        transforms:
+        - class: ParseTransform
+          kwargs:
+            definition_path: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/devices/gps.yaml,/opt/openrvdas/local/devices/Trimble.yaml
+        writers:
+        - class: CachedDataWriter
+          kwargs:
+            data_server: localhost:8766
+    # Finally, write the timestamped and prefixed raw data to log
+    - class: TextFileWriter
+      kwargs:
+        filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/output/gps.log
+        truncate: True
+
+  ###################################################################
+  ## PSXN
+  ###################################################################
+  psxn->file/cached:
+    name: psxn->file/cached
+    readers:
+    - class: UDPReader
+      kwargs:
+        port: 55108
+    transforms:
+    - class: TimestampTransform
+    - class: PrefixTransform
+      kwargs:
+        prefix: "PSXN"
+    writers:
+    - class: ComposedWriter
+      kwargs:
+        transforms:
+        - class: ParseTransform
+          kwargs:
+            definition_path: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/devices/psxn.yaml
+        writers:
+        - class: CachedDataWriter
+          kwargs:
+            data_server: localhost:8766
+    - class: TextFileWriter
+      kwargs:
+        filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/output/psxn.log
+        truncate: True
+
+  # ###################################################################
+  # ## Winch
+  # ###################################################################
+  winch->file/cached:
+    name: winch->file/cached
+    readers:
+    - class: UDPReader
+      kwargs:
+        port: 55801
+    transforms:
+    - class: TimestampTransform
+    - class: PrefixTransform
+      kwargs:
+        prefix: "WINCH"
+    writers:
+    - class: ComposedWriter
+      kwargs:
+        transforms:
+        - class: ParseTransform
+          kwargs:
+            definition_path: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/devices/winch.yaml
+        writers:
+        - class: CachedDataWriter
+          kwargs:
+            data_server: localhost:8766
+    - class: TextFileWriter
+      kwargs:
+        filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/output/winch.log
+        truncate: True
+
+  output_pos->file:
+    name: output_pos->file
+    readers:
+    - class: CachedDataReader
+      kwargs:
+        data_server: localhost:8766
+        subscription:
+          fields:
+            GPSLatitude:
+              seconds: 0
+            GPSNorS:
+              seconds: 0
+            GPSLongitude:
+              seconds: 0
+            GPSEorW:
+              seconds: 0
+    transforms:
+    - class: FormatTransform
+      kwargs:
+        format_str: "{GPSLatitude}, {GPSEorW}, {GPSLongitude}, {GPSNorS}"
+    - class: TimestampTransform
+      kwargs:
+        time_format: "%Y/%m/%d, %H:%M:%S.%f"
+        sep: ", "
+    writers:
+    - class: TextFileWriter
+      kwargs:
+        filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/output/output_pos.log
+        header: "DATE_GMT, TIME_GMT, GPSLatitude, GPSEorW, GPSLongitude, GPSNorS"
+        truncate: True
+
+  output_pos_normalized->file:
+    readers:
+    - class: CachedDataReader
+      kwargs:
+        data_server: localhost:8766
+        subscription:
+          fields:
+            GPSLatitude:
+              seconds: 0
+            GPSNorS:
+              seconds: 0
+            GPSLongitude:
+              seconds: 0
+            GPSEorW:
+              seconds: 0
+    # Example of custom transform
+    transforms:
+    - class: NormalizeLatLonTransform
+      module: contrib.whoi.logger.transforms.normalize_lat_lon_transform
+    - class: FormatTransform
+      kwargs:
+        format_str: "{SignedLatitude}, {SignedLongitude}"
+    - class: TimestampTransform
+      kwargs:
+        time_format: "%Y/%m/%d, %H:%M:%S.%f"
+        sep: ", "
+    writers:
+    - class: TextFileWriter
+      kwargs:
+        filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/output/output_pos_normalized.log
+        header: "DATE_GMT, TIME_GMT, SignedLatitude, SignedLongitude"
+        truncate: True
+
+  output_psxn->file:
+    name: output_psxn->file
+    readers:
+    - class: CachedDataReader
+      kwargs:
+        data_server: localhost:8766
+        subscription:
+          fields:
+            PSXNMessageType:
+              seconds: 0
+            PSXNRoll:
+              seconds: 0
+            PSXNPitch:
+              seconds: 0
+            PSXNHeadingTrue:
+              seconds: 0
+            PSXNHeave:
+              seconds: 0
+    transforms:
+    - class: FormatTransform
+      kwargs:
+        format_str: "{PSXNMessageType}, {PSXNRoll}, {PSXNPitch}, {PSXNHeadingTrue}, {PSXNHeave}"
+    - class: TimestampTransform
+      kwargs:
+        time_format: "%Y/%m/%d, %H:%M:%S.%f"
+        sep: ", "
+    writers:
+    - class: TextFileWriter
+      kwargs:
+        filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/output/output_psxn.log
+        header: "DATE_GMT, TIME_GMT, PSXNMessageType, PSXNRoll, PSXNPitch, PSXNHeadingTrue, PSXNHeave"
+        truncate: True
+
+  output_winch->file:
+    name: output_winch->file
+    readers:
+    - class: CachedDataReader
+      kwargs:
+        data_server: localhost:8766
+        subscription:
+          fields:
+            PSXNMessageType:
+              seconds: 0
+            PSXNRoll:
+              seconds: 0
+            PSXNPitch:
+              seconds: 0
+            PSXNHeadingTrue:
+              seconds: 0
+            PSXNHeave:
+              seconds: 0
+    transforms:
+    - class: FormatTransform
+      kwargs:
+        format_str: "{PSXNMessageType}, {PSXNRoll}, {PSXNPitch}, {PSXNHeadingTrue}, {PSXNHeave}"
+    - class: TimestampTransform
+      kwargs:
+        time_format: "%Y/%m/%d, %H:%M:%S.%f"
+        sep: ", "
+    writers:
+    - class: TextFileWriter
+      kwargs:
+        filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/output/output_psxn.log
+        header: "DATE_GMT, TIME_GMT, PSXNMessageType, PSXNRoll, PSXNPitch, PSXNHeadingTrue, PSXNHeave"
+        truncate: True
+    
+  output_all->file:
+    readers:
+    - class: CachedDataReader
+      kwargs:
+        data_server: localhost:8766
+        subscription:
+          fields:
+            # All of the output fields
+            # GPS fields
+            GPSLatitude:
+              seconds: 0
+            GPSNorS:
+              seconds: 0
+            GPSLongitude:
+              seconds: 0
+            GPSEorW:
+              seconds: 0
+            # PSXN fields
+            PSXNMessageType:
+              seconds: 0
+            PSXNRoll:
+              seconds: 0
+            PSXNPitch:
+              seconds: 0
+            PSXNHeadingTrue:
+              seconds: 0
+            PSXNHeave:
+              seconds: 0
+    writers:
+    - class: TextFileWriter
+      kwargs:
+        filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/output/atlantis.log
+        truncate: True

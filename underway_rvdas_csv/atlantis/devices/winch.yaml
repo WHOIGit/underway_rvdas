@@ -1,0 +1,30 @@
+devices:
+  WINCH:
+    device_type: "winch"
+    fields:
+      Name: "WinchName"
+      NoIdea: "WinchNoIdea"
+      Tension: "WinchTension"
+      PayoutSpeed: "WinchPayoutSpeed"
+      Payout: "WinchPayout"
+
+device_types:
+  winch:
+    format: "{Name},{NoIdea},,{Tension},,{PayoutSpeed},,{Payout}"
+
+    fields:
+      MessageType:
+        units: ""
+        description: ""
+      Roll:
+        units: "degrees"
+        description: ""
+      Pitch:
+        units: "degrees"
+        description: ""
+      HeadingTrue:
+        units: "degrees"
+        description: ""
+      Heave:
+        units: "m"
+        description: ""

@@ -1,0 +1,30 @@
+devices:
+  PSXN:
+    device_type: "psxn"
+    fields:
+      MessageType: "PSXNMessageType"
+      Roll: "PSXNRoll"
+      Pitch: "PSXNPitch"
+      HeadingTrue: "PSXNHeadingTrue"
+      Heave: "PSXNHeave"
+
+device_types:
+  psxn:
+    format: "$PSXN,{MessageType},{Roll},{Pitch},{HeadingTrue},{Heave}"
+
+    fields:
+      MessageType:
+        units: ""
+        description: ""
+      Roll:
+        units: "degrees"
+        description: ""
+      Pitch:
+        units: "degrees"
+        description: ""
+      HeadingTrue:
+        units: "degrees"
+        description: ""
+      Heave:
+        units: "m"
+        description: ""

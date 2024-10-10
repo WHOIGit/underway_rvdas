@@ -1,10 +1,17 @@
 #!/bin/bash
 
+UNDERWAY_RVDAS_CSV_PATH=/home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv
+DATA_SIM_CONFIG_FILE=$UNDERWAY_RVDAS_CSV_PATH/atlantis/data_sim_config.yaml
+LOGGER_CONFIG_FILE=$UNDERWAY_RVDAS_CSV_PATH/atlantis/logger_config.yaml
+
 # Activate virtual environment
+echo "Activating virtual environment..."
 source /opt/openrvdas/venv/bin/activate
 
 # Simulate data
-cd /opt/openrvdas/logger/utils && python3 simulate_data.py --config /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/test/at_data_sim_config.yaml &
+echo "Starting data simulation..."
+python3 /opt/openrvdas/logger/utils/simulate_data.py --config $DATA_SIM_CONFIG_FILE &
 
 # Run logger manager
-cd /opt/openrvdas/server && python3 logger_manager.py --config /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/conf/atlantis.yaml --start_data_server
+echo "Running logger manager..."
+python3 /opt/openrvdas/server/logger_manager.py --config $LOGGER_CONFIG_FILE --start_data_server

@@ -1,0 +1,18 @@
+# GPS data
+gps:
+  class: UDP
+  port: 55000
+  filebase: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/sim/serial_GPS.log
+
+# PSXN data
+psxn:
+  class: UDP
+  port: 55108
+  filebase: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/sim/PSXN.log
+
+# WINCH data
+winch:
+  class: UDP
+  port: 55801
+  time_format: "%Y/%m/%d,%H:%M:%S.%f,"
+  filebase: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/sim/WINCH.log

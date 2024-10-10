@@ -1,0 +1,17 @@
+devices:
+  GPS:
+    device_type: "TrimbleGPS"
+    fields:
+      GPSTime: "GPSTime"
+      Latitude: "GPSLatitude"
+      NorS: "GPSNorS"
+      Longitude: "GPSLongitude"
+      EorW: "GPSEorW"
+      FixQuality: "GPSFixQuality"
+      NumSats: "GPSNumSats"
+      HDOP: "GPSHDOP"
+      AntennaHeight: "GPSAntennaHeight"
+      GeoidHeight: "GPSGeoidHeight"
+      LastDGPSUpdate: "GPSLastDGPSUpdate"
+      DGPSStationID: "GPSDGPSStationID"
+      Unknown: "GPSUnknown"

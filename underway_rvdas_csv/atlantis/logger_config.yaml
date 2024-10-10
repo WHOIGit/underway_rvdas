@@ -15,14 +15,22 @@ loggers:
     configs:
     - output_pos->off
     - output_pos->file
-  output_psxn:
-    configs:
-    - output_psxn->off
-    - output_psxn->file
   output_pos_normalized:
     configs:
     - output_pos_normalized->off
     - output_pos_normalized->file
+  output_psxn:
+    configs:
+    - output_psxn->off
+    - output_psxn->file
+  output_winch:
+    configs:
+    - output_winch->off
+    - output_winch->file
+  output_all:
+    configs:
+    - output_all->off
+    - output_all->file
 
 modes:
   'off':
@@ -30,15 +38,19 @@ modes:
     psxn: psxn->off
     winch: winch->off
     output_pos: output_pos->off
-    output_psxn: output_psxn->off
     output_pos_normalized: output_pos_normalized->off
+    output_psxn: output_psxn->off
+    output_winch: output_winch->off
+    output_all: output_all->off
   underway:
     gps: gps->file/cached
     psxn: psxn->file/cached
     winch: winch->file/cached
     output_pos: output_pos->file
-    output_psxn: output_psxn->file
     output_pos_normalized: output_pos_normalized->file
+    output_psxn: output_psxn->file
+    output_winch: output_winch->file
+    output_all: output_all->file
 
 default_mode: "underway"
 
@@ -47,8 +59,10 @@ configs:
   psxn->off: {}
   winch->off: {}
   output_pos->off: {}
-  output_psxn->off: {}
   output_pos_normalized->off: {}
+  output_psxn->off: {}
+  output_winch->off: {}
+  output_all->off: {}
 
   ###################################################################
   ## GPS
@@ -172,7 +186,7 @@ configs:
     - class: TextFileWriter
       kwargs:
         filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/output/output_pos.log
-        header: "DATE_GMT, TIME_GMT, GPSLatitude, GPSEorW, GPSLongitude, GPSNorS"
+        header: "DATE_GMT, TIME_GMT, LATITUDE, E_OR_W, LONGITUDE, N_OR_S"
         truncate: True
 
   output_pos_normalized->file:
@@ -205,7 +219,7 @@ configs:
     - class: TextFileWriter
       kwargs:
         filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/output/output_pos_normalized.log
-        header: "DATE_GMT, TIME_GMT, SignedLatitude, SignedLongitude"
+        header: "DATE_GMT, TIME_GMT, LATITUDE, LONGITUDE"
         truncate: True
 
   output_psxn->file:
@@ -238,7 +252,7 @@ configs:
     - class: TextFileWriter
       kwargs:
         filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/output/output_psxn.log
-        header: "DATE_GMT, TIME_GMT, PSXNMessageType, PSXNRoll, PSXNPitch, PSXNHeadingTrue, PSXNHeave"
+        header: "DATE_GMT, TIME_GMT, MESSAGE_TYPE, ROLL, PITCH, HEADING_TRUE, HEAVE"
         truncate: True
 
   output_winch->file:
@@ -249,20 +263,20 @@ configs:
         data_server: localhost:8766
         subscription:
           fields:
-            PSXNMessageType:
+            WinchName:
               seconds: 0
-            PSXNRoll:
+            WinchNoIdea:
               seconds: 0
-            PSXNPitch:
+            WinchTension:
               seconds: 0
-            PSXNHeadingTrue:
+            WinchPayoutSpeed:
               seconds: 0
-            PSXNHeave:
+            WinchPayout:
               seconds: 0
     transforms:
     - class: FormatTransform
       kwargs:
-        format_str: "{PSXNMessageType}, {PSXNRoll}, {PSXNPitch}, {PSXNHeadingTrue}, {PSXNHeave}"
+        format_str: "{WinchName}, {WinchNoIdea}, {WinchTension}, {WinchPayoutSpeed}, {WinchPayout}"
     - class: TimestampTransform
       kwargs:
         time_format: "%Y/%m/%d, %H:%M:%S.%f"
@@ -271,10 +285,11 @@ configs:
     - class: TextFileWriter
       kwargs:
         filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/output/output_psxn.log
-        header: "DATE_GMT, TIME_GMT, PSXNMessageType, PSXNRoll, PSXNPitch, PSXNHeadingTrue, PSXNHeave"
+        header: "DATE_GMT, TIME_GMT, NAME, NO_IDEA, TENSION, PAYOUT_SPEED, PAYOUT"
         truncate: True
-    
+
   output_all->file:
+    name: output_all->file
     readers:
     - class: CachedDataReader
       kwargs:

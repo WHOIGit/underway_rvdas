@@ -284,7 +284,7 @@ configs:
     writers:
     - class: TextFileWriter
       kwargs:
-        filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/output/output_psxn.log
+        filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/output/output_winch.log
         header: "DATE_GMT, TIME_GMT, NAME, NO_IDEA, TENSION, PAYOUT_SPEED, PAYOUT"
         truncate: True
 

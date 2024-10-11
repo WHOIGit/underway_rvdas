@@ -128,9 +128,9 @@ configs:
         filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/output/psxn.log
         truncate: True
 
-  # ###################################################################
-  # ## Winch
-  # ###################################################################
+  ###################################################################
+  ## Winch
+  ###################################################################
   winch->file/cached:
     name: winch->file/cached
     readers:
@@ -142,6 +142,10 @@ configs:
     - class: PrefixTransform
       kwargs:
         prefix: "WINCH"
+    # Extra spaces in winch data will mess up ParseTransform
+    - class: RegexReplaceTransform
+      kwargs:
+        patterns: {'\s+,': ',', ',\s+': ','}
     writers:
     - class: ComposedWriter
       kwargs:
@@ -158,6 +162,9 @@ configs:
         filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/output/winch.log
         truncate: True
 
+  ###################################################################
+  ## Position output
+  ###################################################################
   output_pos->file:
     name: output_pos->file
     readers:
@@ -185,10 +192,13 @@ configs:
     writers:
     - class: TextFileWriter
       kwargs:
-        filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/output/output_pos.log
+        filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/output/output_pos.csv
         header: "DATE_GMT, TIME_GMT, LATITUDE, E_OR_W, LONGITUDE, N_OR_S"
         truncate: True
 
+  ###################################################################
+  ## Normalized position output
+  ###################################################################
   output_pos_normalized->file:
     readers:
     - class: CachedDataReader
@@ -218,10 +228,13 @@ configs:
     writers:
     - class: TextFileWriter
       kwargs:
-        filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/output/output_pos_normalized.log
+        filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/output/output_pos_normalized.csv
         header: "DATE_GMT, TIME_GMT, LATITUDE, LONGITUDE"
         truncate: True
 
+  ###################################################################
+  ## PSXN output
+  ###################################################################
   output_psxn->file:
     name: output_psxn->file
     readers:
@@ -251,10 +264,13 @@ configs:
     writers:
     - class: TextFileWriter
       kwargs:
-        filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/output/output_psxn.log
+        filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/output/output_psxn.csv
         header: "DATE_GMT, TIME_GMT, MESSAGE_TYPE, ROLL, PITCH, HEADING_TRUE, HEAVE"
         truncate: True
 
+  ###################################################################
+  ## Winch output
+  ###################################################################
   output_winch->file:
     name: output_winch->file
     readers:
@@ -284,10 +300,13 @@ configs:
     writers:
     - class: TextFileWriter
       kwargs:
-        filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/output/output_winch.log
+        filename: /home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv/atlantis/output/output_winch.csv
         header: "DATE_GMT, TIME_GMT, NAME, NO_IDEA, TENSION, PAYOUT_SPEED, PAYOUT"
         truncate: True
 
+  ###################################################################
+  ## All output fields
+  ###################################################################
   output_all->file:
     name: output_all->file
     readers:
@@ -316,6 +335,17 @@ configs:
             PSXNHeadingTrue:
               seconds: 0
             PSXNHeave:
+              seconds: 0
+            # Winch fields
+            WinchName:
+              seconds: 0
+            WinchNoIdea:
+              seconds: 0
+            WinchTension:
+              seconds: 0
+            WinchPayoutSpeed:
+              seconds: 0
+            WinchPayout:
               seconds: 0
     writers:
     - class: TextFileWriter

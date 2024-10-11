@@ -1,0 +1,3 @@
+UNDERWAY_RVDAS_CSV_PATH=/path/to/underway_rvdas/underway_rvdas_csv
+DATA_SIM_CONFIG_FILE=$UNDERWAY_RVDAS_CSV_PATH/data_sim_config.yaml
+LOGGER_CONFIG_FILE=$UNDERWAY_RVDAS_CSV_PATH/logger_config.yaml

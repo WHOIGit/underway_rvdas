@@ -1,8 +1,6 @@
 #!/bin/bash
 
-UNDERWAY_RVDAS_CSV_PATH=/home/befo/Desktop/WHOI/underway/underway_rvdas/underway_rvdas_csv
-DATA_SIM_CONFIG_FILE=$UNDERWAY_RVDAS_CSV_PATH/atlantis/data_sim_config.yaml
-LOGGER_CONFIG_FILE=$UNDERWAY_RVDAS_CSV_PATH/atlantis/logger_config.yaml
+source .env
 
 # Activate virtual environment
 echo "Activating virtual environment..."
